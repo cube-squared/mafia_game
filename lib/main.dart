@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 
 void main() => runApp(MyApp());
 
@@ -7,20 +9,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Mafia Game',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'The Temperature Game'),
     );
   }
 }
@@ -44,18 +37,110 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int temp = 70;
 
-  void _incrementCounter() {
+  bool heating = false;
+  bool cooling = false;
+
+  Color heatColor = Colors.white;
+  Color coolColor = Colors.white;
+  Color sliderColor = Colors.blue;
+
+  
+  void _showDialog(String text) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Warning"),
+          content: new Text(text),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Please Save Me"),
+              onPressed: () {
+                setState(() {
+                 temp = 50; 
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void set_status(bool heat) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      if (heat && !heating) {
+        heatColor = Colors.red;
+        coolColor = Colors.white;
+        heating = true;
+        cooling = false;
+      } else if (!heat && !cooling) {
+        heatColor = Colors.white;
+        coolColor = Colors.blue;
+        heating = false;
+        cooling = true;
+      } else {
+        heatColor = Colors.white;
+        coolColor = Colors.white;
+        heating = false;
+        cooling = false;
+      }
     });
   }
+  
+
+  void calculate_temp(Timer timer) {
+    if (heating || cooling) {
+      setState(() {
+        if (heating) {
+          temp++;
+        } else if (cooling) {
+          temp--;
+        }
+      });
+      updateSliderColor();
+    }
+  }
+
+  void updateSliderColor () {
+    setState(() {
+      if (temp < 70) {
+        sliderColor = Colors.blue;
+      } else if (temp < 90) {
+        sliderColor = Colors.lightBlue;
+      } else if (temp < 110) {
+        sliderColor = Colors.yellowAccent;
+      } else if (temp < 130) {
+        sliderColor = Colors.yellow;
+      } else if (temp < 150) {
+        sliderColor = Colors.orangeAccent;
+      } else if (temp < 170) {
+        sliderColor = Colors.orange;
+      } else if (temp < 185) {
+        sliderColor = Colors.redAccent;
+      } else {
+        sliderColor = Colors.red;
+      }
+    });
+  }
+
+  Timer timer;
+
+  @override
+  void initState() {
+    super.initState();
+    timer = new Timer.periodic(const Duration(milliseconds: 200), calculate_temp);
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+    
 
   @override
   Widget build(BuildContext context) {
@@ -91,21 +176,72 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Container(
+              padding: EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[ 
+                  Column(children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(5),
+                      child:
+                        RaisedButton(
+                          onPressed: () => set_status(false),
+                          color: coolColor,
+                          child: Column(
+                            children: <Widget>[
+                              Icon(Icons.ac_unit),
+                              Text("COOL"),
+                          ],)
+                        ),
+                    ),
+                  ],),
+                  Column(children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(5),
+                      child:
+                        RaisedButton(
+                          onPressed: () => set_status(true),
+                          color: heatColor,
+                          child: Column(
+                            children: <Widget>[
+                              Icon(Icons.hot_tub),
+                              Text("HEAT"),
+                          ],)
+                        ),
+                    ),
+                  ],),
+              ],),
+            ),
+
+            Slider(
+              activeColor: sliderColor,
+              min: 0,
+              max: 200,
+              onChanged: (newRating) {
+                updateSliderColor();
+                setState(() => temp = temp);
+              },
+              value: temp.toDouble(),
+            ),
+
             Text(
-              'You have pushed the button this many times:',
+              'Current Temperature:',
             ),
             Text(
-              '$_counter',
+              '$temp',
               style: Theme.of(context).textTheme.display1,
             ),
+
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),*/ // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

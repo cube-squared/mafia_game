@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "227958832617",
+    "firebase_url": "https://testing-spencer.firebaseio.com",
+    "project_id": "testing-spencer",
+    "storage_bucket": "testing-spencer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227958832617:android:9130add1672bd3a2",
+        "android_client_info": {
+          "package_name": "com.mafiainc.mafia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227958832617-tq3qave1kugrh8m5puaukj9s2l2n4doq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSccdRV1DKuIJs0bYIo69bUv49o8bjAxg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

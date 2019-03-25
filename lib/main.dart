@@ -1,5 +1,8 @@
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'test_screen.dart';
+import 'user_database.dart';
 import 'globals.dart' as globals;
 
 void main() => runApp(MyApp());
@@ -118,7 +121,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
 
@@ -128,6 +130,10 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
           actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () => UserDatabase.getNickname(globals.user.uid),//Navigator.push(context, MaterialPageRoute(builder: (context) => TestScreen())),
+            ),
             IconButton(
               icon: Icon(Icons.wb_sunny),
               onPressed: () => _setDarkMode(), //_showDialog("settings"),

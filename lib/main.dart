@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'test_screen.dart';
 import 'user_database.dart';
+import 'party_screen.dart';
+import 'lobby_bloc.dart';
 import 'globals.dart' as globals;
 
 void main() => runApp(MyApp());
@@ -43,10 +45,13 @@ class MyApp extends StatelessWidget {
         theme = ThemeData.dark();
       else
         theme = ThemeData.light();
-      return MaterialApp(
-        title: 'Mafia Game',
-        theme: theme,
-        home: MyHomePage(title: 'The Mafia Game'),
+      return LobbyProvider(
+        lobbyBloc: LobbyBloc(),
+        child: MaterialApp(
+          title: 'Mafia Game',
+          theme: theme,
+          home: MyHomePage(title: 'The Mafia Game'),
+        ),
       );
     });
   }
@@ -130,6 +135,13 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
           actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.accessible),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PartyScreen()),
+              ),//Navigator.push(context, MaterialPageRoute(builder: (context) => TestScreen())),
+            ),
             IconButton(
               icon: Icon(Icons.edit),
               onPressed: () => UserDatabase.getNickname(globals.user.uid),//Navigator.push(context, MaterialPageRoute(builder: (context) => TestScreen())),

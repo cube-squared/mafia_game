@@ -33,6 +33,9 @@ dependencies:
   # for login buttons
   flutter_signin_button: ^0.2.6
 
+  # for lobby_bloc
+  rxdart: ^0.21.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

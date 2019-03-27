@@ -1,9 +1,9 @@
-
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/material.dart';
-import 'lobby_bloc.dart';
 import 'game_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'globals.dart' as globals;
 
 class PartyScreen extends StatefulWidget {
   @override
@@ -27,18 +27,10 @@ class _PartyScreenState extends State<PartyScreen> {
   @override
   Widget build(BuildContext context) {
 
-    final lobbyBloc = LobbyProvider.of(context).lobbyBloc;
-
     return Scaffold(
 
       appBar: AppBar(
-        title: StreamBuilder<int>(
-            initialData: 0, // lobbyBloc.partyWidgets.length,
-            stream: lobbyBloc.numRooms,
-            builder: (context, snapshot) {
-              return Text('Lobby - (Rooms: ${snapshot.data})');
-            }
-        ),
+        title: Text("Maifa Parties"),
         backgroundColor: Colors.red,
       ),
 
@@ -50,21 +42,29 @@ class _PartyScreenState extends State<PartyScreen> {
             Animation<double> animation,
             int index,
             ) {
-          String mountainKey = snapshot.key;
           Map map = snapshot.value;
           String name = map['name'] as String;
+          String leader = map['leaderName'] as String;
           int cPlayers = map['cPlayers'] as int;
           int mPlayers = map['mPlayers'] as int;
+          Icon leadingIcon;
+          if (cPlayers >= mPlayers) {
+            leadingIcon = Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
+          } else {
+            leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
+          }
           return new Column(
             children: <Widget>[
               new ListTile(
                 title: new Text('$name'),
+                leading: leadingIcon,
                 subtitle: Row(
                   children: <Widget>[
-                    //Icon(Icons.linear_scale, color: Colors.yellowAccent),
-                    Text("Players: " + cPlayers.toString() + "/" + mPlayers.toString()),
+                    //Icon(MdiIcons.crown, color: Colors.orangeAccent),
+                    Text("Leader: " + leader),
                   ],
                 ),
+                trailing: Text(cPlayers.toString() + "/" + mPlayers.toString(), textScaleFactor: 1.5,),
                 onTap: () {},
               ),
               new Divider(
@@ -75,34 +75,16 @@ class _PartyScreenState extends State<PartyScreen> {
         },
       ),
 
-
-      /*StreamBuilder<List<Widget>>(
-          initialData: lobbyBloc.partyWidgets,
-          stream: lobbyBloc.parties,
-          builder: (context, snapshot) {
-            /*
-            Updating the ListView widget by using .toList() to its children.
-            StreamBuilder only rebuilds widgets based on a new value or
-            object, so this is a decent solution.
-          */
-
-            return ListView(children: snapshot.data.toList());
-          }
-      ),*/
-
       floatingActionButton: FloatingActionButton(
         // foregroundColor: Colors.red,
         backgroundColor: Colors.red,
         child: Icon(Icons.add),
         onPressed: () {
-
           // Dialog widget that takes a sink from a BLoC as an argument
           return showDialog(
             context: context,
-            child: CreatePartyDialog(lobbyBloc: lobbyBloc),
-
+            child: CreatePartyDialog(),
           );
-
         } ,
       ),
     );
@@ -110,10 +92,7 @@ class _PartyScreenState extends State<PartyScreen> {
 }
 
 class CreatePartyDialog extends StatefulWidget {
-
-  final LobbyBloc lobbyBloc;
-
-  CreatePartyDialog({Key key, this.lobbyBloc}): super(key: key);
+  CreatePartyDialog({Key key, }): super(key: key);
 
   @override
   _CreatePartyDialogState createState() => _CreatePartyDialogState();
@@ -132,7 +111,6 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
       contentPadding: EdgeInsets.all(30),
 
       children: <Widget>[
-
         // Party name
         TextFormField(
           controller: partyName,
@@ -161,7 +139,7 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
         ),
 
         // Current number of players
-        TextFormField(
+        /*TextFormField(
           controller: currentNumPlayers,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
@@ -172,23 +150,13 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
             labelStyle: TextStyle(fontSize: 12),
 
           ),
-        ),
+        ),*/
 
         // Submit button
         RaisedButton(
             child: Text('Create'),
             onPressed: () {
-              // Append new ListTile to the sink.
-              // TODO: Add an option to remove ListTile
-              /*widget.lobbyBloc.newParty.add(
-                ListTile(
-                  title: Text(partyName.text),
-                  subtitle: Text('Players: (${currentNumPlayers.text} / ${maxNumPlayers.text})'),
-                ),
-              );*/
-              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text));
-
-              // print('Party name: ${partyName.text}\nMaximum number of players: ${maxNumPlayers.text}\nCurrent number of players: ${currentNumPlayers.text}');
+              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName);
               Navigator.pop(context);
             }
         ),

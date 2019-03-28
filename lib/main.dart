@@ -34,6 +34,7 @@ class AppBuilderState extends State<AppBuilder> {
   }
 }
 
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -44,27 +45,24 @@ class MyApp extends StatelessWidget {
       else
         theme = ThemeData.light();
       return MaterialApp(
-          title: 'Mafia Game',
-          theme: theme,
-          home: MyHomePage(title: 'The Mafia Game'),
+        title: globals.appName,
+        theme: theme,
+        home: HomeScreen(title: globals.homeTitle),
       );
     });
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  HomeScreen({Key key, this.title}) : super(key: key);
 
-  final String title;  
+  final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-
-
-
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeScreenState extends State<HomeScreen> {
 
   // to logout
   void _logout() {
@@ -120,6 +118,62 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
   }
+/*
+  @override
+  Widget build(BuildContext context) {
+
+    DefaultTabController pageData;
+
+    //if (globals.isLoggedIn) {
+      pageData = DefaultTabController(
+        length: 3,
+        child: new Scaffold(
+          appBar: new AppBar(
+            title: new Text("Simple Tab Demo"),
+            bottom: new TabBar(
+              tabs: <Widget>[
+                new Tab(
+                  text: "First",
+                ),
+                new Tab(
+                  text: "Second",
+                ),
+                new Tab(
+                  text: "Third",
+                ),
+              ],
+            ),
+          ),
+          body: new TabBarView(
+            children: <Widget>[
+              new Container(
+                color: Colors.deepOrangeAccent,
+                child: new Center(
+                  child: new Text("First"),
+                ),
+              ),
+              new Container(
+                color: Colors.blueGrey,
+                child: new Center(
+                  child: new Text("Second"),
+                ),
+              ),
+              new Container(
+                color: Colors.teal,
+                child: new Center(
+                  child: new Text("Third"),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    //}
+
+    return pageData;
+
+  }
+*/
 
   @override
   Widget build(BuildContext context) {
@@ -146,8 +200,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () => _setDarkMode(), //_showDialog("settings"),
             ),
             IconButton(
-                icon: Icon(Icons.exit_to_app),
-                onPressed: () => _logout(),
+              icon: Icon(Icons.exit_to_app),
+              onPressed: () => _logout(),
             ),
           ],
         ),
@@ -211,4 +265,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return pageData;
   }
+
+
+
+
 }

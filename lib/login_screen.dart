@@ -59,12 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
               Buttons.Google,
               onPressed: () => _handleSignIn().then((FirebaseUser user) => print(user)).catchError((e) => print(e)),
             ),
-            SignInButtonBuilder(
-              title: 'CnapShat',
-              icon: Icons.email,
-              onPressed: () {},
-              backgroundColor: Colors.yellow[600],
-            ),
           ],
         ),
       ),

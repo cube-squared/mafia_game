@@ -47,9 +47,12 @@ class _PartyScreenState extends State<PartyScreen> {
           String leader = map['leaderName'] as String;
           int cPlayers = map['cPlayers'] as int;
           int mPlayers = map['mPlayers'] as int;
+          bool locked = map['locked'] as bool;
           Icon leadingIcon;
           if (cPlayers >= mPlayers) {
             leadingIcon = Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
+          } else if (locked){
+            leadingIcon = Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
           } else {
             leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
           }
@@ -104,6 +107,9 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
   TextEditingController maxNumPlayers = TextEditingController();
   TextEditingController currentNumPlayers = TextEditingController();
 
+  void _lockedChanged(bool value) => setState(() => locked = value);
+  bool locked = false;
+
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
@@ -138,6 +144,15 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
           ),
         ),
 
+        // locked
+
+        Row(
+          children: <Widget>[
+            Checkbox(value: locked, onChanged: _lockedChanged),
+            Text("Lock Party"),
+          ],
+        ),
+
         // Current number of players
         /*TextFormField(
           controller: currentNumPlayers,
@@ -156,7 +171,7 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
         RaisedButton(
             child: Text('Create'),
             onPressed: () {
-              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName);
+              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked);
               Navigator.pop(context);
             }
         ),

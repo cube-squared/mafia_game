@@ -14,7 +14,7 @@ class GameDatabase {
         .orderByChild("cPlayers");
   }
 
-  static Future<void> createParty(String name, int maxPlayers, String leaderUID, String leaderName) async {
+  static Future<void> createParty(String name, int maxPlayers, String leaderUID, String leaderName, bool locked) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     var party = <String, dynamic>{
       'name' : name,
@@ -23,6 +23,7 @@ class GameDatabase {
       'created': _getDateNow(),
       'leaderUID' : leaderUID,
       'leaderName' : leaderName,
+      'locked' : locked,
     };
 
     ref.child("parties").push().set(party);

@@ -1,10 +1,8 @@
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'test_screen.dart';
 import 'user_database.dart';
 import 'party_screen.dart';
-import 'lobby_bloc.dart';
 import 'globals.dart' as globals;
 
 void main() => runApp(MyApp());
@@ -45,13 +43,10 @@ class MyApp extends StatelessWidget {
         theme = ThemeData.dark();
       else
         theme = ThemeData.light();
-      return LobbyProvider(
-        lobbyBloc: LobbyBloc(),
-        child: MaterialApp(
+      return MaterialApp(
           title: 'Mafia Game',
           theme: theme,
           home: MyHomePage(title: 'The Mafia Game'),
-        ),
       );
     });
   }

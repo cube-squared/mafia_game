@@ -4,6 +4,7 @@ import 'game_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'globals.dart' as globals;
+import 'joined_party_screen.dart';
 
 class PartyScreen extends StatefulWidget {
   @override
@@ -30,7 +31,7 @@ class _PartyScreenState extends State<PartyScreen> {
     return Scaffold(
 
       appBar: AppBar(
-        title: Text("Maifa Parties"),
+        title: Text("Mafia Parties"),
         backgroundColor: Colors.red,
       ),
 
@@ -42,6 +43,7 @@ class _PartyScreenState extends State<PartyScreen> {
             Animation<double> animation,
             int index,
             ) {
+          String key = snapshot.key;
           Map map = snapshot.value;
           String name = map['name'] as String;
           String leader = map['leaderName'] as String;
@@ -68,7 +70,13 @@ class _PartyScreenState extends State<PartyScreen> {
                   ],
                 ),
                 trailing: Text(cPlayers.toString() + "/" + mPlayers.toString(), textScaleFactor: 1.5,),
-                onTap: () {},
+                onTap: () => {
+                  GameDatabase.joinParty(key, globals.user, true),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: key)),
+                  )
+                },
               ),
               new Divider(
                 height: 2.0,
@@ -78,10 +86,11 @@ class _PartyScreenState extends State<PartyScreen> {
         },
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         // foregroundColor: Colors.red,
         backgroundColor: Colors.red,
-        child: Icon(Icons.add),
+        icon: Icon(Icons.add),
+        label: Text("Create Party"),
         onPressed: () {
           // Dialog widget that takes a sink from a BLoC as an argument
           return showDialog(

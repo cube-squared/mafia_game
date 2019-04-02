@@ -15,21 +15,15 @@ class GameDatabase {
   }
 
   static Future<Query> queryParty(String uid) async {
-    print(FirebaseDatabase.instance
-        .reference()
-        .child("parties")
-        .child(uid)
-        .child("players")
-        .orderByKey());
     return FirebaseDatabase.instance
         .reference()
         .child("parties")
         .child(uid)
         .child("players")
-        .orderByKey();
+        .orderByChild("name");
   }
 
-  static Future<void> createParty(String name, int maxPlayers, String leaderUID, String leaderName, bool locked) async {
+  static Future<String> createParty(String name, int maxPlayers, String leaderUID, String leaderName, bool locked) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     var party = <String, dynamic>{
       'name' : name,
@@ -42,6 +36,7 @@ class GameDatabase {
     };
 
     ref.child("parties").push().set(party);
+    return ref.key;
   }
 
   static Future<void> joinParty(String uid, FirebaseUser user, bool leader) async {

@@ -71,7 +71,7 @@ class _PartyScreenState extends State<PartyScreen> {
                 ),
                 trailing: Text(cPlayers.toString() + "/" + mPlayers.toString(), textScaleFactor: 1.5,),
                 onTap: () => {
-                  GameDatabase.joinParty(key, globals.user, true),
+                  GameDatabase.joinParty(key, globals.user, false),
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: key)),
@@ -180,8 +180,14 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
         RaisedButton(
             child: Text('Create'),
             onPressed: () {
-              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked);
+              String partyKey;
+              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked).then((String key) => partyKey = key);
+              GameDatabase.joinParty(partyKey, globals.user, true);
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: partyKey)),
+              );
             }
         ),
 

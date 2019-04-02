@@ -2,10 +2,10 @@ library game_package;
 
 import 'dart:io';
 
-
 abstract class Player {
   static List<Player> votes = [];
   static List<Player> allThePlayers = [];
+  static List<Player> person = [];
 
   String team;
   String role;
@@ -101,30 +101,45 @@ void calculateVote() {
   Player.votes.sort((a, b) => a.getName().compareTo(b.getName()));
   Player.allThePlayers.sort((a,b) => a.getName().compareTo(b.getName()));
 
+  for (int i = 0; i < Player.allThePlayers.length; i++) {
+    print(Player.allThePlayers[i].getName());
+  }
+  print("\n");
   //testing thing
-//  for (int i = 0; i < Player.votes.length; i++) {
-//    print(Player.votes[i].getName());
-//  }
+  for (int i = 0; i < Player.votes.length; i++) {
+    print(Player.votes[i].getName());
+  }
 
   int counter = 0;
   int higher = 0;
-  Player person;
+  Player chosen;
   for(int i = 0; i < Player.allThePlayers.length; i++){
     for(int j = 0; j < Player.votes.length; j++){
-      if(Player.allThePlayers[i].getName() == Player.votes[j].getName()){
+      if(Player.allThePlayers[i].getName().toLowerCase() == Player.votes[j].getName().toLowerCase()){
         counter++;
       }
+      if(counter > higher){
+        higher = counter;
+        Player.person.clear();
+        Player.person.add(Player.allThePlayers[i]);
+      }
+      else if(counter == higher){
+        Player.person.add(Player.allThePlayers[i]);
+      }
+      if(Player.person.length == 1){
+        chosen = Player.person[0];
+      }
     }
-    if(counter > higher){
-      higher = counter;
-      counter = 0;
-      person = Player.allThePlayers[i];
-    }
+    counter = 0;
   }
 
-  print("\nMost votes: " + person.getName());
-  person.setStatus(false);
-  person.killPlayers();
+//  if(Player.person.length == 1){
+//    chosen = Player.person[0];
+//  }
+
+  print("\nMost votes: " + chosen.getName());
+  chosen.setStatus(false);
+  chosen.killPlayers();
 }
 
 class Mafia extends Player {
@@ -158,6 +173,12 @@ class Doctor extends Player {
   }
 //for doctor at night to save person
   void savePlayer(Player player) {
+    if(role == "Doctor"){
+      vote(player.getName());
+      calculateVote();
+    }
+
+
     if (player.saved == false) {
       player.saved = true;
     }
@@ -187,12 +208,12 @@ main() {
   final player7 = Innocent("trey");
   final player8 = Innocent("scott");
   player1.vote('elizabeth');
-  player2.vote('talon');
+  player2.vote('wyatt');
   player3.vote('wyatt');
-  player4.vote('talon');
+  player4.vote('wyatt');
   player5.vote('elizabeth');
-  player6.vote('wyatt');
-  player7.vote('wyatt');
+  player6.vote('elizabeth');
+  player7.vote('talon');
   player8.vote('talon');
 
   calculateVote();

@@ -180,14 +180,15 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
         RaisedButton(
             child: Text('Create'),
             onPressed: () {
-              String partyKey;
-              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked).then((String key) => partyKey = key);
-              GameDatabase.joinParty(partyKey, globals.user, true);
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: partyKey)),
-              );
+              GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked).then((String key) {
+                GameDatabase.joinParty(key, globals.user, true);
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: key)),
+                );
+              });
+
             }
         ),
 

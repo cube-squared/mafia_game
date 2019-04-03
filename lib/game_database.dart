@@ -35,20 +35,39 @@ class GameDatabase {
       'locked' : locked,
     };
 
-    ref.child("parties").push().set(party);
-    return ref.key;
+    DatabaseReference dbParty = ref.child("parties").push();
+    dbParty.set(party);
+    return dbParty.key;
   }
 
   static Future<void> joinParty(String uid, FirebaseUser user, bool leader) async {
+    // add player to list in party
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     var player = <String, dynamic>{
       'name' : user.displayName,
-      'uid' : user.uid,
       'photoUrl' : user.photoUrl,
       'leader' : leader,
     };
-    ref.child("parties").child(uid).child("players").push().set(player);
+    ref.child("parties").child(uid).child("players").child(user.uid).set(player);
+
+    // get number of players in the lobby
+    //int numPlayers;
+    //ref.child("parties").child(uid).once().then((DataSnapshot snap) => {print("length = " + snap.value.length)});
+    //print("numPlayers = " + numPlayers.toString());
+    //ref.child("parties").child(uid).update(<String, int>{'cPlayers' : numPlayers});
   }
+
+  static Future<void> leaveParty(String uid, FirebaseUser user) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(uid).child("players").child(user.uid).remove();
+  }
+
+  static Future<int> getPartyNumPlayers(String uid) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+
+  }
+
+
 
 }
 

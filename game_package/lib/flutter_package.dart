@@ -10,6 +10,7 @@ abstract class Player {
   static bool sleepyTime;
   static bool winner = false;
   static String teamWinner;
+  static bool thing = false;
 
   String team;
   String role;
@@ -123,10 +124,7 @@ class Game {
 
 //Vote for lynchin
     if (Player.winner == false) {
-      for (int i = 0; i < Player.allThePlayers.length; i++) {
-        stdout.writeln("Okay player number ${i + 1} vote for lynchin (type anything that isn't a players name to opt out of voting.):");
-        Player.vote(stdin.readLineSync());
-      }
+      getVotes();
       calculateVote();
       checkWin();
     }
@@ -158,6 +156,13 @@ class Game {
     return null;
   }
 
+  static void getVotes(){
+    for (int i = 0; i < Player.allThePlayers.length; i++) {
+      stdout.writeln("Okay player number ${i + 1} vote for lynchin (type anything that isn't a players name to opt out of voting.):");
+      Player.vote(stdin.readLineSync());
+    }
+  }
+
 //Sort idea -> sort and count, compare counts to find highest
 // While loop idea -> run through list over and over counting instances of each name, keep highest
   static void calculateVote() {
@@ -183,38 +188,98 @@ class Game {
             Player.votes[j].getName().toLowerCase()) {
           counter++;
         }
-        if (counter > higher) {
-          higher = counter;
-          Player.person.clear();
-          Player.person.add(Player.allThePlayers[i]);
-        } else if (counter == higher) {
-          Player.person.add(Player.allThePlayers[i]);
-        }
-        if (Player.person.length == 1) {
-          chosen = Player.person[0];
-        } else if (Player.person.length != 1) {
-          calculateTie(Player.person);
+        if(Player.person.contains(Player.allThePlayers[i])){
+
+        } else {
+          if (counter > higher) {
+            higher = counter;
+            Player.person.clear();
+            Player.person.add(Player.allThePlayers[i]);
+          } else if (counter == higher && counter != 0) {
+            Player.person.add(Player.allThePlayers[i]);
+          }
         }
       }
       counter = 0;
+    }
+    if (Player.person.length == 1) {
+      chosen = Player.person[0];
+    } else if (Player.person.length > 1) {
+      Player.votes.clear();
+      getVotes();
+      chosen = calculateTie(Player.person);
     }
 
 //  if(Player.person.length == 1){
 //    chosen = Player.person[0];
 //  }
 
-    if (!(higher < (Player.allThePlayers.length/2))) {
+    //Ensures at least a majority vote for town hangings.
+    if(Player.thing == true){
       print("\nMost votes: " + chosen.getName());
       chosen.setStatus(false);
       Player.allThePlayers.removeAt(Player.allThePlayers.indexOf(chosen));
       print('${chosen.getName()} was lynched. ffff');
+
+      stdout.writeln("TEST STUFF GO AWAY:");
       for (int i = 0; i < Player.allThePlayers.length; i++)
-        print(Player.allThePlayers[i].getName());
+        stdout.writeln(Player.allThePlayers[i].getName());
+      Player.thing = false;
+    } else if (!(higher < (Player.allThePlayers.length/2))) {
+      //Then kills them.
+      print("\nMost votes: " + chosen.getName());
+      chosen.setStatus(false);
+      Player.allThePlayers.removeAt(Player.allThePlayers.indexOf(chosen));
+      print('${chosen.getName()} was lynched. ffff');
+
+      stdout.writeln("TEST STUFF GO AWAY:");
+      for (int i = 0; i < Player.allThePlayers.length; i++)
+        stdout.writeln(Player.allThePlayers[i].getName());
     }
   }
 
 //Will eventually do a thing
-  static Player calculateTie(List<Player> tiedPeople) {}
+  static Player calculateTie(List<Player> tiedPeople) {
+    Player.thing = true;
+    List<Player> tiedPeoplebutBetter = new List<Player>();
+    for(int i = 0; i < tiedPeople.length; i++){
+      tiedPeoplebutBetter.add(tiedPeople[i]);
+    }
+    Player.person.clear();
+    tiedPeoplebutBetter.sort((a, b) => a.getName().compareTo(b.getName()));
+
+    int tieCounter = 0;
+    int tieHigher = 0;
+    Player tieChosen;
+    for (int i = 0; i < tiedPeoplebutBetter.length; i++) {
+      for (int j = 0; j < Player.votes.length; j++) {
+        if (tiedPeoplebutBetter[i].getName().toLowerCase() ==
+            Player.votes[j].getName().toLowerCase()) {
+          tieCounter++;
+        }
+        if(Player.person.contains(tiedPeoplebutBetter[i])){
+
+        } else {
+          if (tieCounter > tieHigher) {
+            tieHigher = tieCounter;
+            Player.person.clear();
+            Player.person.add(tiedPeoplebutBetter[i]);
+          } else if (tieCounter == tieHigher && tieCounter != 0) {
+            Player.person.add(tiedPeoplebutBetter[i]);
+          }
+        }
+        }
+      tieCounter = 0;
+    }
+    if (Player.person.length == 1) {
+      tieChosen = Player.person[0];
+    } else if (Player.person.length != 1) {
+      Player.votes.clear();
+      getVotes();
+      tieChosen = calculateTie(Player.person);
+    }
+    return tieChosen;
+  }
 }
 
 class Mafia extends Player {

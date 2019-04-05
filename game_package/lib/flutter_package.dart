@@ -5,12 +5,8 @@ import 'dart:io';
 abstract class Player {
   static List<Player> votes = [];
   static List<Player> allThePlayers = [];
-  static List<Player> person = [];
   static List<String> deadDudes = [];
-  static bool sleepyTime;
-  static bool winner = false;
-  static String teamWinner;
-  static bool thing = false;
+  static List<Player> mafiaMembers = [];
 
   String team;
   String role;
@@ -83,11 +79,19 @@ abstract class Player {
 }
 
 class Game {
+  static bool sleepyTime;
+  static bool winner = false;
+  static String teamWinner;
+  static bool isTie = false;
+  static int numOfDoctors = 0;
+
   static void makePlayersDead() {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getStatus()) {
         Player.allThePlayers[i].setSaved(false);
       } else {
+        if(Player.allThePlayers[i].getRole() == 'Doctor')
+          numOfDoctors--;
         Player.deadDudes.add(Player.allThePlayers[i].getName());
         Player.allThePlayers.removeAt(i);
       }
@@ -104,17 +108,18 @@ class Game {
       }
     }
     if (counter == Player.allThePlayers.length) {
-      Player.winner = true;
-      Player.teamWinner = 'Mafia';
+      winner = true;
+      teamWinner = 'Mafia';
     } else if (counter == 0) {
-      Player.winner = true;
-      Player.teamWinner = 'Towns People';
+      winner = true;
+      teamWinner = 'Towns People';
     }
   }
 
   static void dayPhase() {
+    stdout.writeln("Wakey wakey!");
     //Who died?
-    Player.sleepyTime = false;
+    sleepyTime = false;
     for (int i = 0; i < Player.deadDudes.length; i++) {
       stdout.writeln("AWE MAN " + Player.deadDudes[i] + " died");
     }
@@ -123,27 +128,31 @@ class Game {
 //oh people talk Chat();
 
 //Vote for lynchin
-    if (Player.winner == false) {
-      getVotes();
-      calculateVote();
+    if (winner == false) {
+      stdout.writeln("Whose ready for a town hanging?");
+      Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.allThePlayers));
+      makePlayersDead();
+      for(int i = 0; i < Player.allThePlayers.length; i++){
+        print(Player.allThePlayers[i].getName());
+      }
       checkWin();
     }
   }
 
   static void nightPhase() {
-    Player.sleepyTime = true;
-
+    sleepyTime = true;
+    stdout.writeln("night night");
 //Doctor Bit
-    stdout.writeln("Hey fellas ya gotta vote for who to save!");
-    String savedDude = stdin.readLineSync();
-    Doctor.savePlayer(makeStringIntoPerson(savedDude));
+    for(int i = 0; i < numOfDoctors; i++) {
+      stdout.writeln("Doctor ${i+1} choose who to save.");
+      String savedDude = stdin.readLineSync();
+      Doctor.savePlayer(makeStringIntoPerson(savedDude));
+    }
 
 //Mafia Bit
-    stdout.writeln("Hows it goin dude or dudette mafia! Kill someone!");
-    String killedDude = stdin.readLineSync();
-    Mafia.killPlayer(makeStringIntoPerson(killedDude));
-
-    makePlayersDead();
+    stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
+      Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
+      makePlayersDead();
   }
 
   static Player makeStringIntoPerson(String theString) {
@@ -156,129 +165,63 @@ class Game {
     return null;
   }
 
-  static void getVotes(){
-    for (int i = 0; i < Player.allThePlayers.length; i++) {
-      stdout.writeln("Okay player number ${i + 1} vote for lynchin (type anything that isn't a players name to opt out of voting.):");
-      Player.vote(stdin.readLineSync());
+  static List<Player> getVotes(List<Player> votingPlayers){
+    List<Player> votes = [];
+
+    for (int i = 0; i < votingPlayers.length; i++) {
+      stdout.writeln("Okay player number ${i + 1} vote! (type anything that isn't a players name to opt out of voting.):");
+      votes.add(makeStringIntoPerson(stdin.readLineSync()));
     }
+    return votes;
   }
 
 //Sort idea -> sort and count, compare counts to find highest
 // While loop idea -> run through list over and over counting instances of each name, keep highest
-  static void calculateVote() {
-    //sorts list of people who got voted
-    Player.votes.sort((a, b) => a.getName().compareTo(b.getName()));
-    Player.allThePlayers.sort((a, b) => a.getName().compareTo(b.getName()));
-
-    for (int i = 0; i < Player.allThePlayers.length; i++) {
-      print(Player.allThePlayers[i].getName());
-    }
-    print("\n");
-    //testing thing
-    for (int i = 0; i < Player.votes.length; i++) {
-      print(Player.votes[i].getName());
-    }
-
+  static Player calculateVote(List<Player> voteablePlayers, List<Player> votingPlayers) {
     int counter = 0;
     int higher = 0;
     Player chosen;
-    for (int i = 0; i < Player.allThePlayers.length; i++) {
-      for (int j = 0; j < Player.votes.length; j++) {
-        if (Player.allThePlayers[i].getName().toLowerCase() ==
-            Player.votes[j].getName().toLowerCase()) {
+    List<Player> highestVoted = [];
+    List<Player> votes = [];
+
+    votes = getVotes(votingPlayers);
+
+    //sorts list of people who got voted
+    votes.sort((a, b) => a.getName().compareTo(b.getName()));
+    Player.allThePlayers.sort((a, b) => a.getName().compareTo(b.getName()));
+
+    //Does a thing?
+    for (int i = 0; i < voteablePlayers.length; i++) {
+      for (int j = 0; j < votes.length; j++) {
+        if (voteablePlayers[i].getName().toLowerCase() ==
+            votes[j].getName().toLowerCase()) {
           counter++;
         }
-        if(Player.person.contains(Player.allThePlayers[i])){
-
+        if(highestVoted.contains(voteablePlayers[i])){
+          if (counter > higher)
+          higher = counter;
         } else {
           if (counter > higher) {
             higher = counter;
-            Player.person.clear();
-            Player.person.add(Player.allThePlayers[i]);
+            highestVoted.clear();
+            highestVoted.add(voteablePlayers[i]);
           } else if (counter == higher && counter != 0) {
-            Player.person.add(Player.allThePlayers[i]);
+            highestVoted.add(voteablePlayers[i]);
           }
         }
       }
       counter = 0;
     }
-    if (Player.person.length == 1) {
-      chosen = Player.person[0];
-    } else if (Player.person.length > 1) {
-      Player.votes.clear();
-      getVotes();
-      chosen = calculateTie(Player.person);
+    if (highestVoted.length == 1) {
+      chosen = highestVoted[0];
+    } else if (highestVoted.length > 1) {
+      return(calculateVote(highestVoted, votingPlayers));
     }
-
-//  if(Player.person.length == 1){
-//    chosen = Player.person[0];
-//  }
 
     //Ensures at least a majority vote for town hangings.
-    if(Player.thing == true){
-      print("\nMost votes: " + chosen.getName());
-      chosen.setStatus(false);
-      Player.allThePlayers.removeAt(Player.allThePlayers.indexOf(chosen));
-      print('${chosen.getName()} was lynched. ffff');
-
-      stdout.writeln("TEST STUFF GO AWAY:");
-      for (int i = 0; i < Player.allThePlayers.length; i++)
-        stdout.writeln(Player.allThePlayers[i].getName());
-      Player.thing = false;
-    } else if (!(higher < (Player.allThePlayers.length/2))) {
-      //Then kills them.
-      print("\nMost votes: " + chosen.getName());
-      chosen.setStatus(false);
-      Player.allThePlayers.removeAt(Player.allThePlayers.indexOf(chosen));
-      print('${chosen.getName()} was lynched. ffff');
-
-      stdout.writeln("TEST STUFF GO AWAY:");
-      for (int i = 0; i < Player.allThePlayers.length; i++)
-        stdout.writeln(Player.allThePlayers[i].getName());
+    if(!(higher < (votingPlayers.length/2))) {
+      return chosen;
     }
-  }
-
-//Will eventually do a thing
-  static Player calculateTie(List<Player> tiedPeople) {
-    Player.thing = true;
-    List<Player> tiedPeoplebutBetter = new List<Player>();
-    for(int i = 0; i < tiedPeople.length; i++){
-      tiedPeoplebutBetter.add(tiedPeople[i]);
-    }
-    Player.person.clear();
-    tiedPeoplebutBetter.sort((a, b) => a.getName().compareTo(b.getName()));
-
-    int tieCounter = 0;
-    int tieHigher = 0;
-    Player tieChosen;
-    for (int i = 0; i < tiedPeoplebutBetter.length; i++) {
-      for (int j = 0; j < Player.votes.length; j++) {
-        if (tiedPeoplebutBetter[i].getName().toLowerCase() ==
-            Player.votes[j].getName().toLowerCase()) {
-          tieCounter++;
-        }
-        if(Player.person.contains(tiedPeoplebutBetter[i])){
-
-        } else {
-          if (tieCounter > tieHigher) {
-            tieHigher = tieCounter;
-            Player.person.clear();
-            Player.person.add(tiedPeoplebutBetter[i]);
-          } else if (tieCounter == tieHigher && tieCounter != 0) {
-            Player.person.add(tiedPeoplebutBetter[i]);
-          }
-        }
-        }
-      tieCounter = 0;
-    }
-    if (Player.person.length == 1) {
-      tieChosen = Player.person[0];
-    } else if (Player.person.length != 1) {
-      Player.votes.clear();
-      getVotes();
-      tieChosen = calculateTie(Player.person);
-    }
-    return tieChosen;
   }
 }
 
@@ -289,6 +232,7 @@ class Mafia extends Player {
     this.name = name;
     status = true;
     saved = false;
+    Player.mafiaMembers.add(this);
     Player.allThePlayers.add(this);
   }
 
@@ -311,6 +255,7 @@ class Doctor extends Player {
     this.name = name;
     status = true;
     saved = false;
+    Game.numOfDoctors++;
     Player.allThePlayers.add(this);
   }
 
@@ -349,11 +294,11 @@ main() {
   final player8 = Innocent("scott");
 
   //Runs literally the whole game until someone wins.
-  while (!Player.winner) {
+  while (!Game.winner) {
     Game.nightPhase();
     Game.dayPhase();
   }
-  print('${Player.teamWinner} won the game!');
+  print('${Game.teamWinner} won the game!');
 
 //Testing Thing
   for (int i = 0; i < Player.allThePlayers.length; i++)

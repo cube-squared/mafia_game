@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'globals.dart' as globals;
 import 'user_database.dart';
+import 'home_screen.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -36,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
     globals.user = user;
     globals.isLoggedIn = true;
     UserDatabase.createUser(user);
-    Navigator.pop(context);
+    //Navigator.pop(context);
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreenTabbed()));
     return user;
   }
 

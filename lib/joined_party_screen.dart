@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'game_database.dart';
@@ -15,6 +16,11 @@ class JoinedPartyScreen extends StatefulWidget {
 }
 
 class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
+
+  bool userReady = false;
+  String FABtext = "Not Ready";
+  Icon FABicon = Icon(MdiIcons.minusCircleOutline);
+  Color FABcolor = Colors.red;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +58,14 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
       ),
       body: Column(
         children: <Widget>[
+
+          // party display / settings
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: PartyDetails(uid: widget.uid,),
+          ),
+
+          // player list
           Flexible(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 0.0),
@@ -61,10 +75,28 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        icon: Icon(MdiIcons.playCircleOutline),
-        label: Text("Start Game"),
-        backgroundColor: Colors.green,
-        onPressed: () {},
+        icon: FABicon, //Icon(MdiIcons.playCircleOutline),
+        label: Text(FABtext), // Text("Start Game"),
+        backgroundColor: FABcolor,
+        onPressed: () {
+          if (!userReady) {
+            userReady = true;
+            GameDatabase.setStatus(widget.uid, globals.user, "ready");
+            setState(() {
+              FABcolor = Colors.green;
+              FABicon = Icon(MdiIcons.check);
+              FABtext = "Ready";
+            });
+          } else {
+            userReady = false;
+            GameDatabase.setStatus(widget.uid, globals.user, "notready");
+            setState(() {
+              FABcolor = Colors.red;
+              FABicon = Icon(MdiIcons.minusCircleOutline);
+              FABtext = "Not Ready";
+            });
+          }
+        },
       ),
     );
   }
@@ -84,25 +116,61 @@ class PartyDetails extends StatefulWidget {
 class _PartyDetailsState extends State<PartyDetails> {
 
   Size deviceSize;
+  Map<String, dynamic> info;
+  StreamSubscription infoSubscription;
+  Widget startButton;
+
+  @override
+  void initState() {
+    GameDatabase.getPartyInfoStream(widget.uid, _updateInfo).then((StreamSubscription s) => infoSubscription = s);
+
+    super.initState();
+  }
+
+  void _updateInfo(Map<String, dynamic> map) {
+    setState(() {
+      info = map;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    deviceSize = MediaQuery.of(context).size;
-    return Container(
-      height: deviceSize.height / 4,
-      width: double.infinity,
-      alignment: Alignment(-1.0, -1.0),
-      child: Card (
-        child: FittedBox(
+    String lockedText;
+    if (info['locked']) {
+      lockedText = "Party Locked";
+    } else {
+      lockedText = "Party Unlocked";
+    }
+    return Card (
+        child: Container(
+          padding: EdgeInsets.all(10.0),
           child: Column(
-            children: <Widget> [
-              Text("Party of Doom"),
-              Text("Players: 0/10"),
-              Text("Theme: Original"),
+            children: <Widget>[
+              Text(info['name'], style: TextStyle(fontSize: 40, color: Colors.orange),),
+              Row (
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Column (
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text("Leader: " + info['leaderName'], style: TextStyle(fontSize: 20),),
+                      Text("Theme: Original", style: TextStyle(fontSize: 20),),
+                      Text(lockedText, style: TextStyle(fontSize: 20),),
+                      Text("Party UID: " + widget.uid, style: TextStyle(fontSize: 15),),
+                    ],
+                  ),
+                  Column (
+                    children: <Widget>[
+                      Text("Players:", style: TextStyle(fontSize: 20),),
+                      Text(info["cPlayers"].toString() + "/" + info['mPlayers'].toString(), style: TextStyle(fontSize: 30),),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
-        ),
-      ),
+        )
     );
   }
 
@@ -145,33 +213,67 @@ class _PlayerListState extends State<PlayerList> {
           Animation<double> animation,
           int index,
           ) {
-        String key = snapshot.key;
+        String userUID = snapshot.key;
+
         Map map = snapshot.value;
         String name = map['name'] as String;
+        String photoUrl = map['photoUrl'] as String;
         bool leader = map['leader'] as bool;
-        Icon leadingIcon;
-        String subtitle;
-        if (leader) {
-          leadingIcon = Icon(MdiIcons.crown, color: Colors.orangeAccent);
-          subtitle = "Party Leader";
-        } else {
-          leadingIcon = Icon(MdiIcons.account, color: Colors.blue);
-          subtitle = "Player";
+        String status = map['status'] as String;
+        List<Widget> subtitle;
+        List<Widget> trailing;
+
+        if (userUID == globals.user.uid) {
+          name += " (You)";
         }
+
+        if (status == "notready") {
+          trailing = <Widget> [
+            Text("Not Ready ", style: TextStyle(color: Colors.red), textScaleFactor: 1.5,),
+            Icon(MdiIcons.minusCircleOutline, color: Colors.red),
+          ];
+        } else if (status == "ready") {
+          trailing = <Widget> [
+            Text("Ready ", style: TextStyle(color: Colors.green), textScaleFactor: 1.5,),
+            Icon(MdiIcons.check, color: Colors.green,),
+          ];
+        }
+
+        if (leader) {
+          subtitle = <Widget> [
+            Icon(MdiIcons.crown, color: Colors.orangeAccent),
+            Text("Party Leader"),
+          ];
+        } else {
+          subtitle = <Widget> [
+            Icon(MdiIcons.account, color: Colors.blue),
+            Text("Player"),
+          ];
+        }
+
         return Card(
           child: new ListTile(
             title: new Text('$name'),
-            leading: leadingIcon,
-            subtitle: Row(
-              children: <Widget>[
-                //Icon(MdiIcons.crown, color: Colors.orangeAccent),
-                Text(subtitle),
-              ],
+            leading: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(35.0),
+                  border: Border.all(width: .5, color: Colors.black12)),
+              child: CircleAvatar(
+                radius: 20.0,
+                backgroundImage: NetworkImage(photoUrl),
+              ),
             ),
-            trailing: Text(subtitle, textScaleFactor: 1.5,),
+            subtitle: Row(
+              children: subtitle,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: trailing,
+            ),
             onTap: () {},
           ),
         );
+
       },
     );
   }

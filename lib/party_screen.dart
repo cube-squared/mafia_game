@@ -5,6 +5,7 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'globals.dart' as globals;
 import 'joined_party_screen.dart';
+import 'ui_tools.dart';
 
 class PartyScreen extends StatefulWidget {
   @override
@@ -29,11 +30,6 @@ class _PartyScreenState extends State<PartyScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-
-      appBar: AppBar(
-        title: Text("Mafia Parties"),
-        backgroundColor: Colors.red,
-      ),
 
       body: FirebaseAnimatedList (
         query: _query,
@@ -70,12 +66,20 @@ class _PartyScreenState extends State<PartyScreen> {
                   ],
                 ),
                 trailing: Text(cPlayers.toString() + "/" + mPlayers.toString(), textScaleFactor: 1.5,),
-                onTap: () => {
-                  GameDatabase.joinParty(key, globals.user, false),
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: key)),
-                  )
+                onTap: () {
+                  if (cPlayers < mPlayers) {
+                    if (!locked) {
+                      GameDatabase.joinParty(key, globals.user, false);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: key)),
+                      );
+                    } else {
+                      UITools.showBasicPopup(context, "Unable to join party", "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
+                    }
+                  } else {
+                    UITools.showBasicPopup(context, "Unable to join party", "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
+                  }
                 },
               ),
               new Divider(
@@ -87,8 +91,6 @@ class _PartyScreenState extends State<PartyScreen> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        // foregroundColor: Colors.red,
-        backgroundColor: Colors.red,
         icon: Icon(Icons.add),
         label: Text("Create Party"),
         onPressed: () {
@@ -129,6 +131,7 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
         // Party name
         TextFormField(
           controller: partyName,
+          maxLength: 16,
           keyboardType: TextInputType.text,
           decoration: const InputDecoration(
             icon: Icon(Icons.person),
@@ -142,6 +145,7 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
         // Maximum number of players
         TextFormField(
           controller: maxNumPlayers,
+          maxLength: 3,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
             icon: Icon(Icons.person),
@@ -161,20 +165,6 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
             Text("Lock Party"),
           ],
         ),
-
-        // Current number of players
-        /*TextFormField(
-          controller: currentNumPlayers,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            icon: Icon(Icons.person),
-            hintText: 'Current number of players',
-            labelText: 'Current number of players',
-            hintStyle: TextStyle(fontSize: 12),
-            labelStyle: TextStyle(fontSize: 12),
-
-          ),
-        ),*/
 
         // Submit button
         RaisedButton(
@@ -199,15 +189,6 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
 }
 
 class RoomListTile extends StatefulWidget {
-
-  // TODO: Create a RoomListTile widget
-  // final String lobbyName;
-  // final int maxNumPlayers;
-  // final int currentNumPlayers;
-
-
-
-
   @override
   _RoomListTileState createState() => _RoomListTileState();
 }

@@ -74,10 +74,11 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
             children: <Widget>[
               IconButton(icon: Icon(Icons.menu), onPressed: () {},),
               IconButton(icon: Icon(Icons.chat), onPressed: () {
-                showModalBottomSheet(context: context, builder: (BuildContext context) {
-                  return ChatDisplay(uid: widget.uid);
-                });
-              },),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatScreen(uid: widget.uid)),
+                );
+              }),
             ],
           ),
         ),
@@ -309,19 +310,19 @@ class _PlayerListState extends State<PlayerList> {
 
 
 
-
-class ChatDisplay extends StatefulWidget {
-  ChatDisplay({Key key, this.uid}) : super(key: key);
+class ChatScreen extends StatefulWidget {
+  ChatScreen({Key key, this.uid}) : super(key: key);
 
   final String uid;
 
   @override
-  _ChatDisplayState createState() => _ChatDisplayState();
+  _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _ChatDisplayState extends State<ChatDisplay> {
+class _ChatScreenState extends State<ChatScreen> {
 
   TextEditingController chatInput = TextEditingController();
+  ScrollController listScrollController = new ScrollController();
 
   @override
   void initState() {
@@ -334,80 +335,89 @@ class _ChatDisplayState extends State<ChatDisplay> {
     super.initState();
   }
 
+  Future<void> _messageSubmitted(String text) async {
+    chatInput.clear();
+    GameDatabase.sendPartyChat(widget.uid, globals.user, text);
+    //listScrollController.animateTo(20, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Flexible(
-              child: FirebaseAnimatedList(
-                query: globals.chatQuery,
-                itemBuilder: (
-                    BuildContext context,
-                    DataSnapshot snapshot,
-                    Animation<double> animation,
-                    int index,
-                    ) {
-                  String key = snapshot.key;
-                  Map map = snapshot.value;
-                  String name = map['name'] as String;
-                  String message = map['message'] as String;
-                  String photoUrl = map['photoUrl'] as String;
-                  return new Column(
-                    children: <Widget>[
-                      ListTile(
-                        leading: Column(
-                          children: <Widget>[
-                            Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(35.0),
-                                  border: Border.all(width: .5, color: Colors.black12)),
-                              child: CircleAvatar(
-                                radius: 10.0,
-                                backgroundImage: NetworkImage(photoUrl),
-                              ),
-                            ),
-                            Text(name, textScaleFactor: .65,),
-                          ],
+      appBar: AppBar(
+        title: Text("Party Chat"),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Flexible(
+            child: FirebaseAnimatedList(
+              controller: listScrollController,
+              query: globals.chatQuery,
+              itemBuilder: (
+                  BuildContext context,
+                  DataSnapshot snapshot,
+                  Animation<double> animation,
+                  int index,
+                  ) {
+                String key = snapshot.key;
+                Map map = snapshot.value;
+                String name = map['name'] as String;
+                String message = map['message'] as String;
+                String photoUrl = map['photoUrl'] as String;
+                return new Column(
+                  children: <Widget>[
+                    ListTile(
+                      leading: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(35.0),
+                            border: Border.all(width: .5, color: Colors.black12)),
+                        child: CircleAvatar(
+                          radius: 18.0,
+                          backgroundImage: NetworkImage(photoUrl),
                         ),
-                        title: Text(message),
-                      )
-                    ],
-                  );
-                },
+                      ),
+                      title: Text(name, textScaleFactor: .65,),
+                      subtitle: Text(message, textScaleFactor: 1.35,),
+                    )
+                  ],
+                );
+              },
+            ),
+          ),
+
+          // chat input goes here
+          Container(
+            color: Colors.black12,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5.0),
+              child: Row(
+                children: <Widget>[
+                  Flexible(
+                    child: TextField(
+                      controller: chatInput,
+                      onChanged: (String messageText) {
+                        setState(() {
+                          //_isComposingMessage = messageText.length > 0;
+                        });
+                      },
+                      decoration: InputDecoration.collapsed(hintText: "Send a message"),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: IconButton(
+                      icon: Icon(MdiIcons.send),
+                      onPressed: () => _messageSubmitted(chatInput.text),
+                    )
+                  ),
+                ],
               ),
             ),
+          )
 
-            // chat input goes here
-            Container(
-              color: Colors.black12,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: <Widget>[
-                    Flexible(
-                      child: TextField(
-                        controller: chatInput,
-                        onChanged: (String messageText) {
-                          setState(() {
-                            //_isComposingMessage = messageText.length > 0;
-                          });
-                        },
-                        decoration: InputDecoration.collapsed(hintText: "Send a message"),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Icon(MdiIcons.send),
-                    ),
-                  ],
-                ),
-              ),
-            )
-
-          ],
-        )
+        ],
+      )
     );
   }
 

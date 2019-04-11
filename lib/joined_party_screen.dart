@@ -22,81 +22,107 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
   Icon FABicon = Icon(MdiIcons.minusCircleOutline);
   Color FABcolor = Colors.red;
 
+  Future<void> _checkLeave() {
+    if (globals.confirmOnPartyExit) {
+      return showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+          title: Text("Leaving Party"),
+          content: Text("Are you sure you want to leave this party?"),
+          actions: <Widget> [
+            FlatButton(
+                child: Text("Stay"),
+                onPressed: () {
+                  Navigator.pop(context); // close the dialog
+                }
+            ),
+            FlatButton(
+                child: Text("Leave"),
+                onPressed: () {
+                  Navigator.pop(context); // close the dialog
+                  Navigator.pop(context,true); // leave party UI
+                  GameDatabase.leaveParty(widget.uid, globals.user);
+                }
+            ),
+          ],
+        ),
+      );
+    } else {
+      Navigator.pop(context,true); // leave party UI
+      GameDatabase.leaveParty(widget.uid, globals.user);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Party"),
-        backgroundColor: Colors.green,
-        leading: new IconButton(
-          icon: new Icon(Icons.arrow_back),
-          onPressed: (){
-            showDialog(context: context, builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Leaving Party"),
-                content: Text("Are you sure you want to leave this party?"),
-                actions: <Widget> [
-                  FlatButton(
-                      child: Text("Stay"),
-                      onPressed: () {
-                        Navigator.pop(context); // close the dialog
-                      }
-                  ),
-                  FlatButton(
-                    child: Text("Leave"),
-                    onPressed: () {
-                      Navigator.pop(context); // close the dialog
-                      Navigator.pop(context,true); // leave party UI
-                      GameDatabase.leaveParty(widget.uid, globals.user);
-                    }
-                  ),
-                ],
-              );
-            });
-          }
+    return WillPopScope(
+      onWillPop: () => _checkLeave(),
+      child: Scaffold(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        appBar: AppBar(
+          title: Text("Party"),
+          backgroundColor: Colors.green,
+          leading: new IconButton(
+            icon: new Icon(Icons.arrow_back),
+            onPressed: () => _checkLeave(),
+          ),
         ),
-      ),
-      body: Column(
-        children: <Widget>[
-
-          // party display / settings
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: PartyDetails(uid: widget.uid,),
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(icon: Icon(Icons.menu), onPressed: () {},),
+              IconButton(icon: Icon(Icons.chat), onPressed: () {
+                showModalBottomSheet(context: context, builder: (BuildContext context) {
+                  return ChatDisplay(uid: widget.uid);
+                });
+              },),
+            ],
           ),
+        ),
+        body: Column(
+          children: <Widget>[
 
-          // player list
-          Flexible(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 0.0),
-              child: PlayerList(uid: widget.uid),
-            )
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: FABicon, //Icon(MdiIcons.playCircleOutline),
-        label: Text(FABtext), // Text("Start Game"),
-        backgroundColor: FABcolor,
-        onPressed: () {
-          if (!userReady) {
-            userReady = true;
-            GameDatabase.setStatus(widget.uid, globals.user, "ready");
-            setState(() {
-              FABcolor = Colors.green;
-              FABicon = Icon(MdiIcons.check);
-              FABtext = "Ready";
-            });
-          } else {
-            userReady = false;
-            GameDatabase.setStatus(widget.uid, globals.user, "notready");
-            setState(() {
-              FABcolor = Colors.red;
-              FABicon = Icon(MdiIcons.minusCircleOutline);
-              FABtext = "Not Ready";
-            });
-          }
-        },
+            // party display / settings
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: PartyDetails(uid: widget.uid,),
+            ),
+
+            // player list
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 0.0),
+                child: PlayerList(uid: widget.uid),
+              )
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          icon: FABicon, //Icon(MdiIcons.playCircleOutline),
+          label: Text(FABtext), // Text("Start Game"),
+          backgroundColor: FABcolor,
+          onPressed: () {
+            if (!userReady) {
+              userReady = true;
+              GameDatabase.setStatus(widget.uid, globals.user, "ready");
+              setState(() {
+                FABcolor = Colors.green;
+                FABicon = Icon(MdiIcons.check);
+                FABtext = "Ready";
+              });
+            } else {
+              userReady = false;
+              GameDatabase.setStatus(widget.uid, globals.user, "notready");
+              setState(() {
+                FABcolor = Colors.red;
+                FABicon = Icon(MdiIcons.minusCircleOutline);
+                FABtext = "Not Ready";
+              });
+            }
+          },
+        ),
       ),
     );
   }
@@ -113,10 +139,12 @@ class PartyDetails extends StatefulWidget {
   _PartyDetailsState createState() => _PartyDetailsState();
 }
 
+
+// info is global so we can access it from PartyDetails card and top appbar
+Map<String, dynamic> info;
 class _PartyDetailsState extends State<PartyDetails> {
 
   Size deviceSize;
-  Map<String, dynamic> info;
   StreamSubscription infoSubscription;
   Widget startButton;
 
@@ -277,4 +305,110 @@ class _PlayerListState extends State<PlayerList> {
       },
     );
   }
+}
+
+
+
+
+class ChatDisplay extends StatefulWidget {
+  ChatDisplay({Key key, this.uid}) : super(key: key);
+
+  final String uid;
+
+  @override
+  _ChatDisplayState createState() => _ChatDisplayState();
+}
+
+class _ChatDisplayState extends State<ChatDisplay> {
+
+  TextEditingController chatInput = TextEditingController();
+
+  @override
+  void initState() {
+    GameDatabase.queryPartyChat(widget.uid).then((Query query) {
+      setState(() {
+        globals.chatQuery = query;
+      });
+    });
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Flexible(
+              child: FirebaseAnimatedList(
+                query: globals.chatQuery,
+                itemBuilder: (
+                    BuildContext context,
+                    DataSnapshot snapshot,
+                    Animation<double> animation,
+                    int index,
+                    ) {
+                  String key = snapshot.key;
+                  Map map = snapshot.value;
+                  String name = map['name'] as String;
+                  String message = map['message'] as String;
+                  String photoUrl = map['photoUrl'] as String;
+                  return new Column(
+                    children: <Widget>[
+                      ListTile(
+                        leading: Column(
+                          children: <Widget>[
+                            Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(35.0),
+                                  border: Border.all(width: .5, color: Colors.black12)),
+                              child: CircleAvatar(
+                                radius: 10.0,
+                                backgroundImage: NetworkImage(photoUrl),
+                              ),
+                            ),
+                            Text(name, textScaleFactor: .65,),
+                          ],
+                        ),
+                        title: Text(message),
+                      )
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // chat input goes here
+            Container(
+              color: Colors.black12,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  children: <Widget>[
+                    Flexible(
+                      child: TextField(
+                        controller: chatInput,
+                        onChanged: (String messageText) {
+                          setState(() {
+                            //_isComposingMessage = messageText.length > 0;
+                          });
+                        },
+                        decoration: InputDecoration.collapsed(hintText: "Send a message"),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Icon(MdiIcons.send),
+                    ),
+                  ],
+                ),
+              ),
+            )
+
+          ],
+        )
+    );
+  }
+
 }

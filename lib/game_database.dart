@@ -94,27 +94,6 @@ class GameDatabase {
     ref.child("parties").child(uid).child("players").child(user.uid).child("status").set(status);
   }
 
-  static Future<Map<String, dynamic>> getPartyInfo(String uid) async {
-    DatabaseReference ref = FirebaseDatabase.instance.reference();
-    var info = <String, dynamic> {
-      'name' : "Party Name",
-      'cPlayers' : 0,
-      'mPlayers' : 0,
-      'locked' : false,
-      'leaderName' : "Notch",
-    };
-
-    ref.child('parties').child(uid).once().then((DataSnapshot snap) {
-      info['name'] = snap.value["name"];
-      info['mPlayers'] = snap.value['mPlayers'];
-      info['locked'] = snap.value['locked'];
-      info['leaderName'] = snap.value['leaderName'];
-      info['cPlayers'] = snap.value['players'].length;
-    });
-
-    return info;
-  }
-
   static Future<StreamSubscription<Event>> getPartyInfoStream(String uid, void onData(Map<String, dynamic> map)) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).onValue.listen((Event event) {
@@ -124,19 +103,43 @@ class GameDatabase {
         'mPlayers' : 0,
         'locked' : false,
         'leaderName' : "Notch",
+        'leaderUID' : "",
+        'chat' : [],
       };
 
       info['name'] = event.snapshot.value["name"];
       info['mPlayers'] = event.snapshot.value['mPlayers'];
       info['locked'] = event.snapshot.value['locked'];
       info['leaderName'] = event.snapshot.value['leaderName'];
+      info['leaderUID'] = event.snapshot.value['leaderUID'];
       info['cPlayers'] = event.snapshot.value['players'].length;
+      info['chat'] = event.snapshot.value['chat'];
 
       onData(info);
     });
 
     return subscription;
 
+  }
+
+  static Future<void> sendPartyChat(String uid, FirebaseUser user, String message) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    var chat = <String, dynamic>{
+      'name' : user.displayName,
+      'photoUrl' : user.photoUrl,
+      'message' : message,
+      'time' : _getDateNow(),
+    };
+    ref.child("parties").child(uid).child("chat").push().set(chat);
+  }
+
+  static Future<Query> queryPartyChat(String uid) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    return ref
+        .child("parties")
+        .child(uid)
+        .child("chat")
+        .orderByChild("time");
   }
 
 

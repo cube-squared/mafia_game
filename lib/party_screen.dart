@@ -14,12 +14,11 @@ class PartyScreen extends StatefulWidget {
 
 class _PartyScreenState extends State<PartyScreen> {
 
-  Query _query;
   @override
   void initState() {
     GameDatabase.queryParties().then((Query query) {
       setState(() {
-        _query = query;
+        globals.partiesQuery = query;
       });
     });
 
@@ -32,7 +31,7 @@ class _PartyScreenState extends State<PartyScreen> {
     return Scaffold(
 
       body: FirebaseAnimatedList (
-        query: _query,
+        query: globals.partiesQuery,
         itemBuilder: (
             BuildContext context,
             DataSnapshot snapshot,

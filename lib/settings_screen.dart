@@ -39,6 +39,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               }
             ),
+            onTap: () {
+              setState(() {
+                if (globals.darkMode)
+                  _setDarkMode(false);
+                else
+                  _setDarkMode(true);
+              });
+            },
+          ),
+          ListTile(
+            title: Text("Confirm Party Exit"),
+            subtitle: Text("We'll make sure you actually want to leave your friends"),
+            trailing: Switch(
+                value: globals.confirmOnPartyExit,
+                onChanged: (bool value) {
+                  setState(() {
+                    globals.confirmOnPartyExit = value;
+                  });
+                }
+            ),
+            onTap: () {
+              setState(() {
+                if (globals.confirmOnPartyExit)
+                  globals.confirmOnPartyExit = false;
+                else
+                  globals.confirmOnPartyExit = true;
+              });
+            },
           ),
         ],
       ),

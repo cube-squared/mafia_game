@@ -1,6 +1,7 @@
 library game_package;
 
 import 'dart:io';
+import 'dart:math';
 
 abstract class Player {
   static List<Player> votes = [];
@@ -8,6 +9,7 @@ abstract class Player {
   static List<String> deadDudes = [];
   static List<Player> mafiaMembers = [];
 
+  String uid; //so we know which player players are players in the playing.
   String team;
   String role;
   String name;
@@ -57,13 +59,14 @@ abstract class Player {
 
 //toString (shhh)
   void displayDetails() {
+    print("uid: " + uid);
     print("Name: " + name);
     print("Role: " + role);
     print("Team: " + team);
     if (status) {
-      print("Status: Alive");
+      print("Status: Alive\n");
     } else {
-      print("Status: Dead");
+      print("Status: Dead\n");
     }
   }
 
@@ -79,12 +82,18 @@ abstract class Player {
 }
 
 class Game {
+  static bool isMafiaVoting;
   static bool sleepyTime;
   static bool winner = false;
   static String teamWinner;
   static bool isTie = false;
-  static int numOfDoctors = 0;
+  static int numOfDoctors = 1; //make it so you can set this at the beginning of the game
+  static int numOfPlayers; //change to get from database later
+  static int numOfMafia = sqrt(numOfPlayers).floor();
+  static int tieCount = 0;
 
+
+  //Make this unBad - Pass a player, kill that player, change game info based on that.
   static void makePlayersDead() {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getStatus()) {
@@ -92,14 +101,54 @@ class Game {
       } else {
         if(Player.allThePlayers[i].getRole() == 'Doctor')
           numOfDoctors--;
+        if(Player.allThePlayers[i].getRole() == 'Mafia') {
+          numOfMafia--;
+          for(int j = 0; j < Player.mafiaMembers.length; j++){
+            if(Player.allThePlayers[i] == Player.mafiaMembers[j])
+              Player.mafiaMembers.removeAt(j);
+          }
+        }
         Player.deadDudes.add(Player.allThePlayers[i].getName());
         Player.allThePlayers.removeAt(i);
       }
     }
   }
 
-  static void assignRoles() {}
 
+
+  static void assignRoles(List<String> playerList) {
+    numOfPlayers = playerList.length;
+    int mafiaAssigned = 0;
+    int doctorsAssigned = 0;
+
+    playerList.shuffle();
+
+    for(int i = 0; i < numOfPlayers; i++){
+
+      if(mafiaAssigned < numOfMafia){
+        print("${playerList[i]} is now mafia. \n");
+        new Mafia(playerList[i]);
+        mafiaAssigned++;
+      }
+
+      else if(doctorsAssigned < numOfDoctors){
+        print("${playerList[i]} is now a doctor. \n");
+        new Doctor(playerList[i]);
+        doctorsAssigned++;
+      }
+
+      else{
+        print("${playerList[i]} is now an innocent. \n");
+        new Innocent(playerList[i]);
+      }
+
+    }
+
+
+  }
+
+
+  //Make this return a boolean, and then end the game based on that.
   static void checkWin() {
     int counter = 0;
     for (int i = 0; i < Player.allThePlayers.length; i++) {
@@ -128,10 +177,15 @@ class Game {
 //oh people talk Chat();
 
 //Vote for lynchin
+    isMafiaVoting = false;
     if (winner == false) {
       stdout.writeln("Whose ready for a town hanging?");
       Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.allThePlayers));
       makePlayersDead();
+      for (int i = 0; i < Player.deadDudes.length; i++) {
+        stdout.writeln("AWE MAN " + Player.deadDudes[i] + " died");
+      }
+      Player.deadDudes.clear();
       for(int i = 0; i < Player.allThePlayers.length; i++){
         print(Player.allThePlayers[i].getName());
       }
@@ -150,6 +204,7 @@ class Game {
     }
 
 //Mafia Bit
+    isMafiaVoting = true;
     stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
       Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
       makePlayersDead();
@@ -170,7 +225,12 @@ class Game {
 
     for (int i = 0; i < votingPlayers.length; i++) {
       stdout.writeln("Okay player number ${i + 1} vote! (type anything that isn't a players name to opt out of voting.):");
-      votes.add(makeStringIntoPerson(stdin.readLineSync()));
+      String tempVote = stdin.readLineSync();
+      if(makeStringIntoPerson(tempVote) == null){
+
+      } else {
+        votes.add(makeStringIntoPerson(tempVote));
+      }
     }
     return votes;
   }
@@ -183,6 +243,12 @@ class Game {
     Player chosen;
     List<Player> highestVoted = [];
     List<Player> votes = [];
+
+    if(tieCount == 3){
+      stdout.writeln("Ya'll a bunch a dummies, now nobody dies dummies.");
+      tieCount = 0;
+      return null;
+    }
 
     votes = getVotes(votingPlayers);
 
@@ -197,15 +263,12 @@ class Game {
             votes[j].getName().toLowerCase()) {
           counter++;
         }
-        if(highestVoted.contains(voteablePlayers[i])){
-          if (counter > higher)
+        if (counter > higher) {
           higher = counter;
-        } else {
-          if (counter > higher) {
-            higher = counter;
-            highestVoted.clear();
-            highestVoted.add(voteablePlayers[i]);
-          } else if (counter == higher && counter != 0) {
+          highestVoted.clear();
+          highestVoted.add(voteablePlayers[i]);
+        } else if (counter == higher && counter != 0) {
+          if(highestVoted.contains(voteablePlayers[i])){} else {
             highestVoted.add(voteablePlayers[i]);
           }
         }
@@ -215,11 +278,22 @@ class Game {
     if (highestVoted.length == 1) {
       chosen = highestVoted[0];
     } else if (highestVoted.length > 1) {
+      tieCount++;
       return(calculateVote(highestVoted, votingPlayers));
     }
 
+    if(isMafiaVoting) {
+      if(votes.length == 0){
+        return null;
+      }
+    } else {
+      if (votes.length < ((votingPlayers.length / 2) + 1).floor()) {
+        return null;
+      }
+    }
+
     //Ensures at least a majority vote for town hangings.
-    if(!(higher < (votingPlayers.length/2))) {
+    if(!(higher < ((votingPlayers.length/2).floor()))) {
       return chosen;
     }
   }
@@ -255,7 +329,6 @@ class Doctor extends Player {
     this.name = name;
     status = true;
     saved = false;
-    Game.numOfDoctors++;
     Player.allThePlayers.add(this);
   }
 
@@ -284,6 +357,7 @@ class Innocent extends Player {
 
 //testy
 main() {
+  /*
   final player1 = Doctor("Wyatt");
   final player2 = Mafia("Matthew");
   final player3 = Innocent("Talon");
@@ -292,12 +366,30 @@ main() {
   final player6 = Innocent("daryl");
   final player7 = Innocent("trey");
   final player8 = Innocent("scott");
+  */
+
+
+  List<String> listOfPlayers = [];
+  listOfPlayers.add("Wyatt");
+  listOfPlayers.add("Matthew");
+  listOfPlayers.add("Talon");
+  listOfPlayers.add("Elizabeth");
+  listOfPlayers.add("Spencer");
+  listOfPlayers.add("Daryl");
+  listOfPlayers.add("Trey");
+  listOfPlayers.add("Scott");
+  Game.assignRoles(listOfPlayers);
+
+
+
 
   //Runs literally the whole game until someone wins.
+
   while (!Game.winner) {
     Game.nightPhase();
     Game.dayPhase();
   }
+
   print('${Game.teamWinner} won the game!');
 
 //Testing Thing

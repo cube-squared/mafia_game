@@ -42,6 +42,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
                   Navigator.pop(context); // close the dialog
                   Navigator.pop(context,true); // leave party UI
                   GameDatabase.leaveParty(widget.uid, globals.user);
+                  globals.chatQuery = null; // reset internal party chat cache
                 }
             ),
           ],
@@ -50,6 +51,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
     } else {
       Navigator.pop(context,true); // leave party UI
       GameDatabase.leaveParty(widget.uid, globals.user);
+      globals.chatQuery = null; // reset internal party chat cache
     }
   }
 
@@ -352,6 +354,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: <Widget>[
           Flexible(
             child: FirebaseAnimatedList(
+              reverse: true,
               controller: listScrollController,
               query: globals.chatQuery,
               itemBuilder: (

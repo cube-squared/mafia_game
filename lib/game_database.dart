@@ -123,14 +123,17 @@ class GameDatabase {
   }
 
   static Future<void> sendPartyChat(String uid, FirebaseUser user, String message) async {
-    DatabaseReference ref = FirebaseDatabase.instance.reference();
-    var chat = <String, dynamic>{
-      'name' : user.displayName,
-      'photoUrl' : user.photoUrl,
-      'message' : message,
-      'time' : _getDateNow(),
-    };
-    ref.child("parties").child(uid).child("chat").push().set(chat);
+    message = message.trim();
+    if (message.isNotEmpty) {
+      DatabaseReference ref = FirebaseDatabase.instance.reference();
+      var chat = <String, dynamic>{
+        'name' : user.displayName,
+        'photoUrl' : user.photoUrl,
+        'message' : message,
+        'time' : _getDateNow(),
+      };
+      ref.child("parties").child(uid).child("chat").push().set(chat);
+    }
   }
 
   static Future<Query> queryPartyChat(String uid) async {

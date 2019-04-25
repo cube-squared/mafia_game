@@ -41,20 +41,20 @@ class _PartyScreenState extends State<PartyScreen> {
           String key = snapshot.key;
           Map map = snapshot.value;
           String status = map['status'] as String;
+          String name = map['name'] as String;
+          String leader = map['leaderName'] as String;
+          int cPlayers = map['cPlayers'] as int;
+          int mPlayers = map['mPlayers'] as int;
+          bool locked = map['locked'] as bool;
+          Icon leadingIcon;
+          if (cPlayers >= mPlayers) {
+            leadingIcon = Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
+          } else if (locked){
+            leadingIcon = Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
+          } else {
+            leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
+          }
           if (status == "open") {
-            String name = map['name'] as String;
-            String leader = map['leaderName'] as String;
-            int cPlayers = map['cPlayers'] as int;
-            int mPlayers = map['mPlayers'] as int;
-            bool locked = map['locked'] as bool;
-            Icon leadingIcon;
-            if (cPlayers >= mPlayers) {
-              leadingIcon = Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
-            } else if (locked){
-              leadingIcon = Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
-            } else {
-              leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
-            }
             return new Column(
               children: <Widget>[
                 new ListTile(
@@ -66,20 +66,25 @@ class _PartyScreenState extends State<PartyScreen> {
                       Text("Leader: " + leader),
                     ],
                   ),
-                  trailing: Text(cPlayers.toString() + "/" + mPlayers.toString(), textScaleFactor: 1.5,),
+                  trailing: Text(
+                    cPlayers.toString() + "/" + mPlayers.toString(),
+                    textScaleFactor: 1.5,),
                   onTap: () {
                     if (cPlayers < mPlayers) {
                       if (!locked) {
                         GameDatabase.joinParty(key, globals.user, false);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => JoinedPartyScreen(uid: key)),
+                          MaterialPageRoute(builder: (context) =>
+                              JoinedPartyScreen(uid: key)),
                         );
                       } else {
-                        UITools.showBasicPopup(context, "Unable to join party", "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
+                        UITools.showBasicPopup(context, "Unable to join party",
+                            "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
                       }
                     } else {
-                      UITools.showBasicPopup(context, "Unable to join party", "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
+                      UITools.showBasicPopup(context, "Unable to join party",
+                          "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
                     }
                   },
                 ),
@@ -89,7 +94,7 @@ class _PartyScreenState extends State<PartyScreen> {
               ],
             );
           } else {
-            return null;
+            return Text("");
           }
         },
       ),

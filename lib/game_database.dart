@@ -130,7 +130,7 @@ class GameDatabase {
         'name' : user.displayName,
         'photoUrl' : user.photoUrl,
         'message' : message,
-        'time' : _getDateNow(),
+        'time' : DateTime.now().millisecondsSinceEpoch * -1,
       };
       ref.child("parties").child(uid).child("chat").push().set(chat);
     }
@@ -150,7 +150,5 @@ class GameDatabase {
 }
 
 String _getDateNow() {
-  var now = new DateTime.now();
-  var formatter = new DateFormat('yyyy-MM-dd HH:mm:ss');
-  return formatter.format(now);
+  return DateTime.now().millisecondsSinceEpoch.toString();
 }

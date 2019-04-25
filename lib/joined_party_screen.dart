@@ -109,7 +109,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
           onPressed: () {
             if (!userReady) {
               userReady = true;
-              GameDatabase.setStatus(widget.uid, globals.user, "ready");
+              GameDatabase.setPlayerStatus(widget.uid, globals.user, "ready");
               setState(() {
                 FABcolor = Colors.green;
                 FABicon = Icon(MdiIcons.check);
@@ -117,7 +117,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
               });
             } else {
               userReady = false;
-              GameDatabase.setStatus(widget.uid, globals.user, "notready");
+              GameDatabase.setPlayerStatus(widget.uid, globals.user, "notready");
               setState(() {
                 FABcolor = Colors.red;
                 FABicon = Icon(MdiIcons.minusCircleOutline);

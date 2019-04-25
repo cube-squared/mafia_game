@@ -31,6 +31,7 @@ class GameDatabase {
       'leaderUID' : leaderUID,
       'leaderName' : leaderName,
       'locked' : locked,
+      'status' : 'open',
     };
 
     DatabaseReference dbParty = ref.child("parties").push();
@@ -66,8 +67,9 @@ class GameDatabase {
       numPlayers = await getPartyNumPlayers(uid);
       ref.child("parties").child(uid).child("cPlayers").set(numPlayers);
     } else {
-      // remove party if last one leaves
-      deleteParty(uid);
+      // mark party as deleted if last one leaves
+      setPartyStatus(uid, "deleted");
+      // deleteParty(uid);
     }
   }
 
@@ -89,7 +91,12 @@ class GameDatabase {
     ref.child("parties").child(uid).remove();
   }
 
-  static Future<void> setStatus(String uid, FirebaseUser user, String status) async {
+  static Future<void> setPartyStatus(String uid, String status) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(uid).child("status").set(status);
+  }
+
+  static Future<void> setPlayerStatus(String uid, FirebaseUser user, String status) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(uid).child("players").child(user.uid).child("status").set(status);
   }

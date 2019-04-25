@@ -166,6 +166,7 @@ class Game {
   }
 
   static void dayPhase() {
+    makePlayersDead();
     stdout.writeln("Wakey wakey!");
     //Who died?
     sleepyTime = false;
@@ -207,7 +208,6 @@ class Game {
     isMafiaVoting = true;
     stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
       Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
-      makePlayersDead();
   }
 
   static Player makeStringIntoPerson(String theString) {
@@ -323,7 +323,9 @@ class Mafia extends Player {
 }
 
 class Doctor extends Player {
+  static bool savedSelf;
   Doctor(String name) {
+    savedSelf = false;
     team = 'Town';
     role = 'Doctor';
     this.name = name;
@@ -334,13 +336,29 @@ class Doctor extends Player {
 
 //for doctor at night to save person
   static void savePlayer(Player player) {
-    if (player == null) {
-    } else {
-      if (player.saved == false) {
-        player.saved = true;
+      String docName;
+      for(int i =0; i < Player.allThePlayers.length; i++) {
+        if (Player.allThePlayers[i].getRole() == "Doctor") {
+          docName = Player.allThePlayers[i].getName();
+        }
       }
-    }
-  }
+        if (player == null) {} else {
+          if (!savedSelf) {
+            if (player.getName() == docName) {
+              savedSelf = true;
+              if (player.saved == false) {
+                player.saved = true;
+              }
+            }
+          } else {
+            if (player.getName() == docName) {} else {
+              if (player.saved == false) {
+                player.saved = true;
+              }
+            }
+          }
+        }
+      }
 }
 
 //useless

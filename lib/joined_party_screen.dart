@@ -5,6 +5,7 @@ import 'game_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'globals.dart' as globals;
+import 'game_screen.dart';
 
 class JoinedPartyScreen extends StatefulWidget {
   JoinedPartyScreen({Key key, this.uid}) : super(key: key);
@@ -74,7 +75,12 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              IconButton(icon: Icon(Icons.menu), onPressed: () {},),
+              IconButton(icon: Icon(Icons.menu), onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GameScreen(uid: widget.uid)),
+                );
+              },),
               IconButton(icon: Icon(Icons.chat), onPressed: () {
                 Navigator.push(
                   context,

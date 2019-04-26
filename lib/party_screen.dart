@@ -94,7 +94,7 @@ class _PartyScreenState extends State<PartyScreen> {
               ],
             );
           } else {
-            return Text("");
+            return Container(width: 0, height: 0,);
           }
         },
       ),

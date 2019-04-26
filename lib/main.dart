@@ -38,7 +38,16 @@ class MyApp extends StatelessWidget {
     return AppBuilder(builder: (context) {
       ThemeData theme;
       if (globals.darkMode)
-        theme = ThemeData.dark();
+        theme = ThemeData
+        (
+          brightness: Brightness.dark,
+          primarySwatch: Colors.red,
+          accentColor: Colors.red,
+          toggleableActiveColor: Colors.red,
+
+
+
+        );// ThemeData.dark();
       else
         theme = ThemeData.light();
       return MaterialApp(

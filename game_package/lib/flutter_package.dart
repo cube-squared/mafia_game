@@ -92,19 +92,17 @@ class Game {
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
 
-
   //Make this unBad - Pass a player, kill that player, change game info based on that.
   static void makePlayersDead() {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getStatus()) {
         Player.allThePlayers[i].setSaved(false);
       } else {
-        if(Player.allThePlayers[i].getRole() == 'Doctor')
-          numOfDoctors--;
-        if(Player.allThePlayers[i].getRole() == 'Mafia') {
+        if (Player.allThePlayers[i].getRole() == 'Doctor') numOfDoctors--;
+        if (Player.allThePlayers[i].getRole() == 'Mafia') {
           numOfMafia--;
-          for(int j = 0; j < Player.mafiaMembers.length; j++){
-            if(Player.allThePlayers[i] == Player.mafiaMembers[j])
+          for (int j = 0; j < Player.mafiaMembers.length; j++) {
+            if (Player.allThePlayers[i] == Player.mafiaMembers[j])
               Player.mafiaMembers.removeAt(j);
           }
         }
@@ -114,8 +112,6 @@ class Game {
     }
   }
 
-
-
   static void assignRoles(List<String> playerList) {
     numOfPlayers = playerList.length;
     int mafiaAssigned = 0;
@@ -123,30 +119,21 @@ class Game {
 
     playerList.shuffle();
 
-    for(int i = 0; i < numOfPlayers; i++){
-
-      if(mafiaAssigned < numOfMafia){
+    for (int i = 0; i < numOfPlayers; i++) {
+      if (mafiaAssigned < numOfMafia) {
         print("${playerList[i]} is now mafia. \n");
         new Mafia(playerList[i]);
         mafiaAssigned++;
-      }
-
-      else if(doctorsAssigned < numOfDoctors){
+      } else if (doctorsAssigned < numOfDoctors) {
         print("${playerList[i]} is now a doctor. \n");
         new Doctor(playerList[i]);
         doctorsAssigned++;
-      }
-
-      else{
+      } else {
         print("${playerList[i]} is now an innocent. \n");
         new Innocent(playerList[i]);
       }
-
     }
-
-
   }
-
 
   //Make this return a boolean, and then end the game based on that.
   static void checkWin() {
@@ -181,13 +168,14 @@ class Game {
     isMafiaVoting = false;
     if (winner == false) {
       stdout.writeln("Whose ready for a town hanging?");
-      Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.allThePlayers));
+      Mafia.killPlayer(
+          calculateVote(Player.allThePlayers, Player.allThePlayers));
       makePlayersDead();
       for (int i = 0; i < Player.deadDudes.length; i++) {
         stdout.writeln("AWE MAN " + Player.deadDudes[i] + " died");
       }
       Player.deadDudes.clear();
-      for(int i = 0; i < Player.allThePlayers.length; i++){
+      for (int i = 0; i < Player.allThePlayers.length; i++) {
         print(Player.allThePlayers[i].getName());
       }
       checkWin();
@@ -198,8 +186,8 @@ class Game {
     sleepyTime = true;
     stdout.writeln("night night");
 //Doctor Bit
-    for(int i = 0; i < numOfDoctors; i++) {
-      stdout.writeln("Doctor ${i+1} choose who to save.");
+    for (int i = 0; i < numOfDoctors; i++) {
+      stdout.writeln("Doctor ${i + 1} choose who to save.");
       String savedDude = stdin.readLineSync();
       Doctor.savePlayer(makeStringIntoPerson(savedDude));
     }
@@ -207,7 +195,7 @@ class Game {
 //Mafia Bit
     isMafiaVoting = true;
     stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
-      Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
+    Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
   }
 
   static Player makeStringIntoPerson(String theString) {
@@ -220,14 +208,14 @@ class Game {
     return null;
   }
 
-  static List<Player> getVotes(List<Player> votingPlayers){
+  static List<Player> getVotes(List<Player> votingPlayers) {
     List<Player> votes = [];
 
     for (int i = 0; i < votingPlayers.length; i++) {
-      stdout.writeln("Okay player number ${i + 1} vote! (type anything that isn't a players name to opt out of voting.):");
+      stdout.writeln(
+          "Okay player number ${i + 1} vote! (type anything that isn't a players name to opt out of voting.):");
       String tempVote = stdin.readLineSync();
-      if(makeStringIntoPerson(tempVote) == null){
-
+      if (makeStringIntoPerson(tempVote) == null) {
       } else {
         votes.add(makeStringIntoPerson(tempVote));
       }
@@ -237,14 +225,15 @@ class Game {
 
 //Sort idea -> sort and count, compare counts to find highest
 // While loop idea -> run through list over and over counting instances of each name, keep highest
-  static Player calculateVote(List<Player> voteablePlayers, List<Player> votingPlayers) {
+  static Player calculateVote(
+      List<Player> voteablePlayers, List<Player> votingPlayers) {
     int counter = 0;
     int higher = 0;
     Player chosen;
     List<Player> highestVoted = [];
     List<Player> votes = [];
 
-    if(tieCount == 3){
+    if (tieCount == 3) {
       stdout.writeln("Ya'll a bunch a dummies, now nobody dies dummies.");
       tieCount = 0;
       return null;
@@ -268,7 +257,8 @@ class Game {
           highestVoted.clear();
           highestVoted.add(voteablePlayers[i]);
         } else if (counter == higher && counter != 0) {
-          if(highestVoted.contains(voteablePlayers[i])){} else {
+          if (highestVoted.contains(voteablePlayers[i])) {
+          } else {
             highestVoted.add(voteablePlayers[i]);
           }
         }
@@ -279,11 +269,11 @@ class Game {
       chosen = highestVoted[0];
     } else if (highestVoted.length > 1) {
       tieCount++;
-      return(calculateVote(highestVoted, votingPlayers));
+      return (calculateVote(highestVoted, votingPlayers));
     }
 
-    if(isMafiaVoting) {
-      if(votes.length == 0){
+    if (isMafiaVoting) {
+      if (votes.length == 0) {
         return null;
       }
     } else {
@@ -293,7 +283,7 @@ class Game {
     }
 
     //Ensures at least a majority vote for town hangings.
-    if(!(higher < ((votingPlayers.length/2).floor()))) {
+    if (!(higher < ((votingPlayers.length / 2).floor()))) {
       return chosen;
     }
   }
@@ -324,6 +314,7 @@ class Mafia extends Player {
 
 class Doctor extends Player {
   static bool savedSelf;
+
   Doctor(String name) {
     savedSelf = false;
     team = 'Town';
@@ -336,29 +327,31 @@ class Doctor extends Player {
 
 //for doctor at night to save person
   static void savePlayer(Player player) {
-      String docName;
-      for(int i =0; i < Player.allThePlayers.length; i++) {
-        if (Player.allThePlayers[i].getRole() == "Doctor") {
-          docName = Player.allThePlayers[i].getName();
-        }
+    String docName;
+    for (int i = 0; i < Player.allThePlayers.length; i++) {
+      if (Player.allThePlayers[i].getRole() == "Doctor") {
+        docName = Player.allThePlayers[i].getName();
       }
-        if (player == null) {} else {
-          if (!savedSelf) {
-            if (player.getName() == docName) {
-              savedSelf = true;
-              if (player.saved == false) {
-                player.saved = true;
-              }
-            }
-          } else {
-            if (player.getName() == docName) {} else {
-              if (player.saved == false) {
-                player.saved = true;
-              }
-            }
+    }
+    if (player == null) {
+    } else {
+      if (!savedSelf) {
+        if (player.saved == false) {
+          player.saved = true;
+        }
+        if (player.getName() == docName) {
+          savedSelf = true;
+        }
+      } else {
+        if (player.getName() == docName) {
+        } else {
+          if (player.saved == false) {
+            player.saved = true;
           }
         }
       }
+    }
+  }
 }
 
 //useless
@@ -373,20 +366,7 @@ class Innocent extends Player {
   }
 }
 
-//testy
 main() {
-  /*
-  final player1 = Doctor("Wyatt");
-  final player2 = Mafia("Matthew");
-  final player3 = Innocent("Talon");
-  final player4 = Innocent("Elizabeth");
-  final player5 = Innocent("spencer");
-  final player6 = Innocent("daryl");
-  final player7 = Innocent("trey");
-  final player8 = Innocent("scott");
-  */
-
-
   List<String> listOfPlayers = [];
   listOfPlayers.add("Wyatt");
   listOfPlayers.add("Matthew");
@@ -398,16 +378,11 @@ main() {
   listOfPlayers.add("Scott");
   Game.assignRoles(listOfPlayers);
 
-
-
-
   //Runs literally the whole game until someone wins.
-
   while (!Game.winner) {
     Game.nightPhase();
     Game.dayPhase();
   }
-
   print('${Game.teamWinner} won the game!');
 
 //Testing Thing

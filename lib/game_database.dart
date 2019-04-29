@@ -67,9 +67,10 @@ class GameDatabase {
       numPlayers = await getPartyNumPlayers(uid);
       ref.child("parties").child(uid).child("cPlayers").set(numPlayers);
     } else {
-      // mark party as deleted if last one leaves
+      // mark party as deleted if last one leaves, then wait 3 seconds and delete it
       setPartyStatus(uid, "deleted");
-      // deleteParty(uid);
+      await new Future.delayed(const Duration(seconds: 3), () => "3");
+      deleteParty(uid);
     }
   }
 

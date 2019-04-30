@@ -17,140 +17,207 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
 
-  String phaseName = "Day";
-  Color phaseColor = Colors.orange;
-
-  void _setDarkMode(bool value) {
-    if (value) {
-      globals.darkMode = true;
-    } else {
-      globals.darkMode = false;
-    }
-    AppBuilder.of(context).rebuild();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold (
       appBar: AppBar(
-        title: Text("In Game - $phaseName Phase"),
+        title: Text("In Game - Day Phase"),
       ),
       body: Column(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
-            child: Card (
-                child: Container (
-                  padding: EdgeInsets.all(10.0),
-                  width: double.infinity,
-                  child: Column(
-                    children: <Widget>[
-                      Text("$phaseName Phase", style: TextStyle(fontSize: 30, color: phaseColor)),
-                      Text("Day 10", style: TextStyle(fontSize: 20)),
-                    ],
-                  ),
-                )
+          DayNightHeading(day: true, dayNum: 10,),
+          Flexible(
+            child: ListView(
+              children: <Widget>[
+                Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
+                PlayerSelector(players: ["Spencer", "Daryl", "Matt", "Crockett", "Wyatt", "Elizabeth", "Scott"], numSelect: 2, prompt: "Select 2 people to kill:", selectedIcon: Icon(MdiIcons.skullOutline, color: Colors.red),),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
-            child: Card (
-                child: Container (
-                  padding: EdgeInsets.all(10.0),
-                  width: double.infinity,
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Text("You are ", style: TextStyle(fontSize: 20)),
-                          Text("Mafia", style: TextStyle(fontSize: 20, color: Colors.red)),
-                        ],
-                      ),
-                      Text("It's day 5. You are exhausted of all this crap going on in your town. But, its finally time to take out that mafia member you're sure about. Who is it?", style: TextStyle(fontSize: 15))
-                    ],
-                  ),
-                )
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
-            child: Card (
-                child: Container (
-                  padding: EdgeInsets.all(10.0),
-                  width: double.infinity,
-                  child: Column(
-                    children: <Widget>[
-                      Text("Waiting for other players...", style: TextStyle(fontSize: 20, color: Colors.green)),
-                    ],
-                  ),
-                )
-            ),
-          ),
-          /*Padding(
-            padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
-            child: Card (
-              child: Container (
-                padding: EdgeInsets.all(10.0),
-                width: double.infinity,
-                child: Column(
-                  children: <Widget>[
-                    Text("Who do you want to burn at the stake?", style: TextStyle(fontSize: 20)),
-                    Card(
-                      child: ListTile(
-                        leading: Icon(MdiIcons.chevronRight, color: Colors.green),
-                        title: Text("Daryl Denaga"),
-                        onTap: () {},
-                      ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        leading: Icon(MdiIcons.chevronRight, color: Colors.green),
-                        title: Text("Crockett"),
-                        onTap: () {},
-                      ),
-                    ),
-                    Card(
-                      color: Colors.green[300],
-                      child: ListTile(
-                        leading: Icon(MdiIcons.chevronRight, color: Colors.green),
-                        title: Text("Spencer"),
-                        onTap: () {},
-                      ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        leading: Icon(MdiIcons.chevronRight, color: Colors.green),
-                        title: Text("Wyatt"),
-                        onTap: () {},
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ),
-          ),
-          */
-          RaisedButton(
-            child: Text("switch phase"),
-            onPressed: () {
-              setState(() {
-                if (globals.darkMode) {
-                  _setDarkMode(false);
-                  phaseColor = Colors.orange;
-                  phaseName = "Day";
-                } else {
-                  _setDarkMode(true);
-                  phaseColor = Colors.purple;
-                  phaseName = "Night";
-                }
-              });
-            },
-          )
         ],
       ),
     );
   }
 
+}
+
+
+
+
+
+class DayNightHeading extends StatefulWidget {
+  DayNightHeading({Key key, this.day, this.dayNum}) : super(key: key);
+
+  final bool day;
+  final int dayNum;
+
+  @override
+  _DayNightHeadingState createState() => _DayNightHeadingState();
+}
+
+class _DayNightHeadingState extends State<DayNightHeading> {
+  @override
+  Widget build(BuildContext context) {
+    String phase;
+    Color phaseColor;
+    if (widget.day) {
+      phase = "Day";
+      phaseColor = Colors.orange;
+    } else {
+      phase = "Night";
+      phaseColor = Colors.purple;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text("$phase Phase", style: TextStyle(fontSize: 30, color: phaseColor)),
+                    Text("Day 10", style: TextStyle(fontSize: 20)),
+                  ],
+                ),
+                Text("1:23", style: TextStyle(fontSize: 40, color: Colors.green)),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+
+
+
+class WaitingForPlayers extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("Waiting for other players...", style: TextStyle(fontSize: 20, color: Colors.green)),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+
+
+
+
+class Narration extends StatelessWidget {
+  Narration({Key key, this.role, this.text}) : super(key: key);
+
+  final String role;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card(
+          child: Container(
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    Text("You are ", style: TextStyle(fontSize: 20)),
+                    Text(role, style: TextStyle(fontSize: 20, color: Colors.red)),
+                  ],
+                ),
+                Text(text, style: TextStyle(fontSize: 15))
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+
+
+
+class PlayerSelector extends StatefulWidget {
+  PlayerSelector({Key key, this.players, this.numSelect, this.prompt, this.selectedIcon}) : super(key: key);
+
+  final List<String> players;
+  final int numSelect;
+  final String prompt;
+  final Icon selectedIcon;
+
+  @override
+  _PlayerSelectorState createState() => _PlayerSelectorState();
+}
+
+class _PlayerSelectorState extends State<PlayerSelector> {
+  List<String> selectedPlayers = new List<String>();
+
+  void addToSelection(String name) {
+    setState(() {
+      if (selectedPlayers.contains(name)) {
+        selectedPlayers.remove(name);
+        return;
+      }
+      if (selectedPlayers.length >= widget.numSelect) {
+        selectedPlayers.remove(selectedPlayers[0]);
+      }
+      selectedPlayers.add(name);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    // put prompt at top
+    List<Widget> widgets = new List<Widget>();
+    widgets.add(Text(widget.prompt, style: TextStyle(fontSize: 20)));
+
+    // build list of players to select from
+    widget.players.forEach((String name) {
+      Color bkgColor = Theme.of(context).cardColor;
+      Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
+      if (selectedPlayers.contains(name)) {
+        bkgColor = Colors.red[100];
+        icon = widget.selectedIcon;
+      }
+      widgets.add(Card(
+        color: bkgColor,
+        child: ListTile(
+          leading: icon,
+          title: Text(name),
+          onTap: () {addToSelection(name);},
+        ),
+      ));
+    });
+
+    // return final card for UI
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: widgets,
+            ),
+          )
+      ),
+    );
+  }
 }

@@ -21,7 +21,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Image.network(globals.user.photoUrl),
+
+              CircleAvatar(
+                backgroundImage: NetworkImage(globals.user.photoUrl),
+                radius: 75,
+
+              ),
+
+              // Image.network(globals.user.photoUrl),
+
               Text(globals.user.displayName, textScaleFactor: 1.5,),
               Text(globals.user.email),
             ],

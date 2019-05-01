@@ -63,7 +63,6 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         appBar: AppBar(
           title: Text("Party"),
-          backgroundColor: Colors.green,
           leading: new IconButton(
             icon: new Icon(Icons.arrow_back),
             onPressed: () => _checkLeave(),
@@ -154,6 +153,7 @@ class _PartyDetailsState extends State<PartyDetails> {
   @override
   void initState() {
     GameDatabase.getPartyInfoStream(widget.uid, _updateInfo).then((StreamSubscription s) => infoSubscription = s);
+
 
     super.initState();
   }

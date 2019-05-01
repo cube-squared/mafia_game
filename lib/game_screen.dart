@@ -5,6 +5,8 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'globals.dart' as globals;
 import 'main.dart';
+import 'chat_screen.dart';
+import 'ui_tools.dart';
 
 class GameScreen extends StatefulWidget {
   GameScreen({Key key, this.uid}) : super(key: key);
@@ -23,18 +25,35 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         title: Text("In Game - Day Phase"),
       ),
-      body: Column(
+      body: ListView(
         children: <Widget>[
           DayNightHeading(day: true, dayNum: 10,),
-          Flexible(
-            child: ListView(
+          Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
+          PlayerSelector(players: ["Spencer", "Daryl", "Matt", "Crockett", "Wyatt", "Elizabeth", "Scott"], numSelect: 2, prompt: "Select 2 people to kill:", selectedIcon: Icon(MdiIcons.skullOutline, color: Colors.red),),
+        ],
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            IconButton(icon: Icon(Icons.help), onPressed: () {
+              UITools.showBasicPopup(context, "Game Information", "You are part of the Mafia. Every night, you will be able to select someone to kill with your fellow mafia members. If the medic doesn't choose to save that person, they will be killed. During the day, all the townspeople will vote on someone to hang for suspicion of being a mafia member, so it's your job to keep your job secret.");
+            }),
+            Row(
               children: <Widget>[
-                Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-                PlayerSelector(players: ["Spencer", "Daryl", "Matt", "Crockett", "Wyatt", "Elizabeth", "Scott"], numSelect: 2, prompt: "Select 2 people to kill:", selectedIcon: Icon(MdiIcons.skullOutline, color: Colors.red),),
+                Icon(MdiIcons.timer, color: Colors.green,),
+                Text("1:23", style: TextStyle(fontSize: 23, color: Colors.green),),
               ],
             ),
-          ),
-        ],
+            IconButton(icon: Icon(Icons.chat), onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatScreen(uid: widget.uid)),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -84,7 +103,17 @@ class _DayNightHeadingState extends State<DayNightHeading> {
                     Text("Day 10", style: TextStyle(fontSize: 20)),
                   ],
                 ),
-                Text("1:23", style: TextStyle(fontSize: 40, color: Colors.green)),
+                Column(
+                  children: <Widget>[
+                    Text("You are", style: TextStyle(fontSize: 12)),
+                    Row(
+                      children: <Widget>[
+                        Text("Mafia", style: TextStyle(fontSize: 25, color: Colors.red)),
+                        Icon(MdiIcons.hatFedora, color: Colors.red, size: 30),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
           )
@@ -138,8 +167,7 @@ class Narration extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Text("You are ", style: TextStyle(fontSize: 20)),
-                    Text(role, style: TextStyle(fontSize: 20, color: Colors.red)),
+                    Text("Narration", style: TextStyle(fontSize: 20)),
                   ],
                 ),
                 Text(text, style: TextStyle(fontSize: 15))

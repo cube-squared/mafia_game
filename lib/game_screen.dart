@@ -100,7 +100,7 @@ class _DayNightHeadingState extends State<DayNightHeading> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text("$phase Phase", style: TextStyle(fontSize: 30, color: phaseColor)),
-                    Text("Day 10", style: TextStyle(fontSize: 20)),
+                    Text("Day " + widget.dayNum.toString(), style: TextStyle(fontSize: 20)),
                   ],
                 ),
                 Column(
@@ -167,7 +167,7 @@ class Narration extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Text("Narration", style: TextStyle(fontSize: 20)),
+                    Text("Day 10", style: TextStyle(fontSize: 20)),
                   ],
                 ),
                 Text(text, style: TextStyle(fontSize: 15))

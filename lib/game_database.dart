@@ -47,6 +47,11 @@ class GameDatabase {
       'photoUrl' : user.photoUrl,
       'leader' : leader,
       'status' : "notready",
+      'role' : "",
+      'team' : "",
+      'alive' : true,
+      'saved' : false,
+      'vote' : "",
     };
     ref.child("parties").child(uid).child("players").child(user.uid).set(player);
 
@@ -151,6 +156,15 @@ class GameDatabase {
         .child(uid)
         .child("chat")
         .orderByChild("time");
+  }
+
+
+
+  //  ------------------------- IN GAME FUNCTIONS -------------------------
+
+  static Future<void> setPlayerAttribute(String partyUID, String playerUID, String attribute, dynamic value) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(partyUID).child("players").child(playerUID).child(attribute).set(value);
   }
 
 

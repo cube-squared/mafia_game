@@ -47,6 +47,11 @@ class GameDatabase {
       'photoUrl' : user.photoUrl,
       'leader' : leader,
       'status' : "notready",
+      'role' : "",
+      'team' : "",
+      'alive' : true,
+      'saved' : false,
+      'vote' : "",
     };
     ref.child("parties").child(uid).child("players").child(user.uid).set(player);
 
@@ -67,9 +72,10 @@ class GameDatabase {
       numPlayers = await getPartyNumPlayers(uid);
       ref.child("parties").child(uid).child("cPlayers").set(numPlayers);
     } else {
-      // mark party as deleted if last one leaves
+      // mark party as deleted if last one leaves, then wait 3 seconds and delete it
       setPartyStatus(uid, "deleted");
-      // deleteParty(uid);
+      await new Future.delayed(const Duration(seconds: 3), () => "3");
+      deleteParty(uid);
     }
   }
 
@@ -150,6 +156,15 @@ class GameDatabase {
         .child(uid)
         .child("chat")
         .orderByChild("time");
+  }
+
+
+
+  //  ------------------------- IN GAME FUNCTIONS -------------------------
+
+  static Future<void> setPlayerAttribute(String partyUID, String playerUID, String attribute, dynamic value) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(partyUID).child("players").child(playerUID).child(attribute).set(value);
   }
 
 

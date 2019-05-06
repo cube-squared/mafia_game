@@ -2,6 +2,7 @@ library game_package;
 
 import 'dart:io';
 import 'dart:math';
+import 'game_database.dart';
 
 abstract class Player {
   static List<Player> votes = [];
@@ -10,51 +11,55 @@ abstract class Player {
   static List<Player> mafiaMembers = [];
 
   String uid; //so we know which player players are players in the playing.
+  /*
   String team;
   String role;
   String name;
   bool status;
   bool saved;
+  */
+
+  //UPDATED FOR FIREBASE
 
   //getters and setters duh
-  void setTeam(String team) {
-    this.team = team;
+  void setTeam(String team, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "team", team);
   }
 
-  void setRole(String role) {
-    this.role = role;
+  void setRole(String role, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "role", role);
   }
 
-  void setName(String name) {
-    this.name = name;
+  void setName(String name, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "name", name);
   }
 
-  void setStatus(bool status) {
-    this.status = status;
+  void setStatus(bool status, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "alive", status);
   }
 
-  void setSaved(bool saved) {
-    this.saved = saved;
+  void setSaved(bool saved, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "saved", saved);
   }
 
-  String getTeam() {
-    return team;
+  Future<String> getTeam(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "team");
   }
 
-  String getRole() {
-    return role;
+  Future<String> getRole(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "role");
   }
 
-  String getName() {
-    return name;
+  Future<String> getName(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "name");
   }
 
-  bool getStatus() {
-    return status;
+  Future<bool> getStatus(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "alive");
   }
 
-  bool getSaved() {
-    return saved;
+  Future<bool> getSaved(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "saved");
   }
 
 //toString (shhh)
@@ -91,6 +96,7 @@ class Game {
   static int numOfPlayers; //change to get from database later
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
+  static String partyId;
 
   //Make this unBad - Pass a player, kill that player, change game info based on that.
   static void makePlayersDead() {
@@ -112,25 +118,27 @@ class Game {
     }
   }
 
-  static void assignRoles(List<String> playerList) {
-    numOfPlayers = playerList.length;
+  //UPDATED FOR FIREBASE INTEGRATION
+
+  static void assignRoles(List<String> playerIdList) {
+    numOfPlayers = playerIdList.length;
     int mafiaAssigned = 0;
     int doctorsAssigned = 0;
 
-    playerList.shuffle();
+    playerIdList.shuffle();
 
     for (int i = 0; i < numOfPlayers; i++) {
       if (mafiaAssigned < numOfMafia) {
-        print("${playerList[i]} is now mafia. \n");
-        new Mafia(playerList[i]);
+        print("${playerIdList[i]} is now mafia. \n");
+        new Mafia(playerIdList[i]);
         mafiaAssigned++;
       } else if (doctorsAssigned < numOfDoctors) {
-        print("${playerList[i]} is now a doctor. \n");
-        new Doctor(playerList[i]);
+        print("${playerIdList[i]} is now a doctor. \n");
+        new Doctor(playerIdList[i]);
         doctorsAssigned++;
       } else {
-        print("${playerList[i]} is now an innocent. \n");
-        new Innocent(playerList[i]);
+        print("${playerIdList[i]} is now an innocent. \n");
+        new Innocent(playerIdList[i]);
       }
     }
   }
@@ -289,13 +297,26 @@ class Game {
   }
 }
 
+
+
 class Mafia extends Player {
-  Mafia(String name) {
+
+  //UPDATED FOR FIREBASE INTEGRATION
+  Mafia(String id) {
+    /*
     team = 'Mafia';
     role = 'Mafia';
     this.name = name;
     status = true;
     saved = false;
+    Player.mafiaMembers.add(this);
+    Player.allThePlayers.add(this);
+    */
+    uid = id;
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "mafia");
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "mafia");
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "alive", true);
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "saved", false);
     Player.mafiaMembers.add(this);
     Player.allThePlayers.add(this);
   }
@@ -315,13 +336,24 @@ class Mafia extends Player {
 class Doctor extends Player {
   static bool savedSelf;
 
-  Doctor(String name) {
+  //UPDATED FOR FIREBASE INTEGRATION
+
+  Doctor(String id) {
+    /*
     savedSelf = false;
     team = 'Town';
     role = 'Doctor';
     this.name = name;
     status = true;
     saved = false;
+    Player.allThePlayers.add(this);
+    */
+
+    uid = id;
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "town");
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "doctor");
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "alive", true);
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "saved", false);
     Player.allThePlayers.add(this);
   }
 
@@ -356,17 +388,27 @@ class Doctor extends Player {
 
 //useless
 class Innocent extends Player {
-  Innocent(String name) {
+  Innocent(String id) {
+    /*
     team = 'Town';
     role = 'Innocent';
     this.name = name;
     status = true;
     saved = false;
     Player.allThePlayers.add(this);
+    */
+
+    uid = id;
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "town");
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "doctor");
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "alive", true);
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "saved", false);
+    Player.allThePlayers.add(this);
   }
 }
 
 main() {
+  /*
   List<String> listOfPlayers = [];
   listOfPlayers.add("Wyatt");
   listOfPlayers.add("Matthew");
@@ -376,6 +418,7 @@ main() {
   listOfPlayers.add("Daryl");
   listOfPlayers.add("Trey");
   listOfPlayers.add("Scott");
+  */
   Game.assignRoles(listOfPlayers);
 
   //Runs literally the whole game until someone wins.

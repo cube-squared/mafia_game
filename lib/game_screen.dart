@@ -221,7 +221,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       Color bkgColor = Theme.of(context).cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(name)) {
-        bkgColor = Colors.red[100];
+        if (globals.darkMode)
+          bkgColor = Colors.red.withOpacity(.5);
+        else
+          bkgColor = Colors.red[100];
         icon = widget.selectedIcon;
       }
       widgets.add(Card(

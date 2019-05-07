@@ -1,6 +1,7 @@
 library game_package;
 
 import 'dart:io';
+import 'dart:async';
 import 'dart:math';
 import 'game_database.dart';
 
@@ -42,6 +43,7 @@ abstract class Player {
     GameDatabase.setPlayerAttribute(Game.partyId, id, "saved", saved);
   }
 
+  // Prob unnecessary
   Future<String> getTeam(String id) {
     return GameDatabase.getPlayerAttribute(Game.partyId, id, "team");
   }
@@ -62,23 +64,25 @@ abstract class Player {
     return GameDatabase.getPlayerAttribute(Game.partyId, id, "saved");
   }
 
+
+
 //toString (shhh)
-  void displayDetails() {
+  void displayDetails() async {
     print("uid: " + uid);
-    print("Name: " + name);
-    print("Role: " + role);
-    print("Team: " + team);
-    if (status) {
+    print("Name: " + await getName(uid));
+    print("Role: " + await getRole(uid));
+    print("Team: " + await getTeam(uid));
+    if (await getStatus(uid)) {
       print("Status: Alive\n");
     } else {
       print("Status: Dead\n");
     }
   }
 
-//gets each players vote.
-  static void vote(String theVote) {
+//F1X TH1S
+  static void vote(String theVote) async {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
-      if (Player.allThePlayers[i].getName().toLowerCase() ==
+      if ( await Player.allThePlayers[i].getName(Player.allThePlayers[i].uid).toLowerCase() ==
           theVote.toLowerCase()) {
         Player.votes.add(Player.allThePlayers[i]);
       }
@@ -98,7 +102,9 @@ class Game {
   static int tieCount = 0;
   static String partyId;
 
+
   //Make this unBad - Pass a player, kill that player, change game info based on that.
+  /*
   static void makePlayersDead() {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getStatus()) {
@@ -113,6 +119,30 @@ class Game {
           }
         }
         Player.deadDudes.add(Player.allThePlayers[i].getName());
+        Player.allThePlayers.removeAt(i);
+      }
+    }
+  }
+
+  */
+  //Player.allThePlayers[i].getStatus()
+
+  //UPDATED FOR FIREBASE INTEGRATION
+
+  static void makePlayersDead() async{
+    for (int i = 0; i < Player.allThePlayers.length; i++) {
+      if (await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "alive")) {
+        Player.allThePlayers[i].setSaved(false, Player.allThePlayers[i].uid);
+      } else {
+        if (await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "role") == 'Doctor') numOfDoctors--;
+        if (await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "role") == 'Mafia') {
+          numOfMafia--;
+          for (int j = 0; j < Player.mafiaMembers.length; j++) {
+            if (Player.allThePlayers[i] == Player.mafiaMembers[j])
+              Player.mafiaMembers.removeAt(j);
+          }
+        }
+        Player.deadDudes.add(await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "name"));
         Player.allThePlayers.removeAt(i);
       }
     }
@@ -407,7 +437,7 @@ class Innocent extends Player {
   }
 }
 
-main() {
+main() async {                                                                  //very likely to fuck up
   /*
   List<String> listOfPlayers = [];
   listOfPlayers.add("Wyatt");
@@ -419,7 +449,9 @@ main() {
   listOfPlayers.add("Trey");
   listOfPlayers.add("Scott");
   */
-  Game.assignRoles(listOfPlayers);
+
+
+  Game.assignRoles(await GameDatabase.getAllPlayers(Game.partyId));
 
   //Runs literally the whole game until someone wins.
   while (!Game.winner) {

@@ -47,53 +47,60 @@ class _PartyScreenState extends State<PartyScreen> {
           int mPlayers = map['mPlayers'] as int;
           bool locked = map['locked'] as bool;
           Icon leadingIcon;
-          if (cPlayers >= mPlayers) {
-            leadingIcon = Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
-          } else if (locked){
-            leadingIcon = Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
-          } else {
-            leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
-          }
-          if (status == "open") {
-            return new Column(
-              children: <Widget>[
-                new ListTile(
-                  title: new Text('$name'),
-                  leading: leadingIcon,
-                  subtitle: Row(
-                    children: <Widget>[
-                      //Icon(MdiIcons.crown, color: Colors.orangeAccent),
-                      Text("Leader: " + leader),
-                    ],
-                  ),
-                  trailing: Text(
-                    cPlayers.toString() + "/" + mPlayers.toString(),
-                    textScaleFactor: 1.5,),
-                  onTap: () {
-                    if (cPlayers < mPlayers) {
-                      if (!locked) {
-                        GameDatabase.joinParty(key, globals.user, false);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>
-                              JoinedPartyScreen(uid: key)),
-                        );
+          try {
+            if (cPlayers >= mPlayers) {
+              leadingIcon =
+                  Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
+            } else if (locked) {
+              leadingIcon =
+                  Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
+            } else {
+              leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
+            }
+            if (status == "open") {
+              return new Column(
+                children: <Widget>[
+                  new ListTile(
+                    title: new Text('$name'),
+                    leading: leadingIcon,
+                    subtitle: Row(
+                      children: <Widget>[
+                        //Icon(MdiIcons.crown, color: Colors.orangeAccent),
+                        Text("Leader: " + leader),
+                      ],
+                    ),
+                    trailing: Text(
+                      cPlayers.toString() + "/" + mPlayers.toString(),
+                      textScaleFactor: 1.5,),
+                    onTap: () {
+                      if (cPlayers < mPlayers) {
+                        if (!locked) {
+                          GameDatabase.joinParty(key, globals.user, false);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) =>
+                                JoinedPartyScreen(uid: key)),
+                          );
+                        } else {
+                          UITools.showBasicPopup(
+                              context, "Unable to join party",
+                              "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
+                        }
                       } else {
                         UITools.showBasicPopup(context, "Unable to join party",
-                            "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
+                            "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
                       }
-                    } else {
-                      UITools.showBasicPopup(context, "Unable to join party",
-                          "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
-                    }
-                  },
-                ),
-                new Divider(
-                  height: 2.0,
-                ),
-              ],
-            );
-          } else {
+                    },
+                  ),
+                  new Divider(
+                    height: 2.0,
+                  ),
+                ],
+              );
+            } else {
+              return Container(width: 0, height: 0,);
+            }
+          } catch (e) {
             return Container(width: 0, height: 0,);
           }
         },

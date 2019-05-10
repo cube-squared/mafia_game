@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'globals.dart' as globals;
 import 'home_screen.dart';
+import 'game.dart';
+import 'game_database.dart';
 
-void main() => runApp(MyApp());
+// void main() => runApp(MyApp());
+void main() async {
+
+  // code here
+  Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
+
+  //runApp(MyApp());
+}
+
 
 class AppBuilder extends StatefulWidget {
   final Function(BuildContext) builder;
@@ -56,6 +66,7 @@ class MyApp extends StatelessWidget {
         home: HomeScreenTabbed(),//HomeScreen(title: globals.homeTitle),
       );
     });
+
   }
 }
 

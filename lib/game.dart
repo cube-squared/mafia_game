@@ -15,9 +15,9 @@ abstract class Player {
   static List<Player> mafiaMembers = [];
 
   String uid; //so we know which player players are players in the playing.
-  String team;  //never changes
-  String role;  //never changes
-  String name;  //never changes
+  String team; //never changes
+  String role; //never changes
+  String name; //never changes
   /*
 
   bool status;
@@ -51,7 +51,7 @@ abstract class Player {
   }
 
 
-   String getTeam() {
+  String getTeam() {
     return team;
   }
 
@@ -62,6 +62,7 @@ abstract class Player {
   String getName() {
     return name;
   }
+
   //unessesary
   Future<bool> getStatus(String id) {
     return GameDatabase.getPlayerAttribute(Game.partyId, id, "alive");
@@ -70,7 +71,6 @@ abstract class Player {
   Future<bool> getSaved(String id) {
     return GameDatabase.getPlayerAttribute(Game.partyId, id, "saved");
   }
-
 
 
 //toString (shhh)
@@ -91,7 +91,7 @@ abstract class Player {
     String name;
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       name = Player.allThePlayers[i].getName();
-      if ( name.toLowerCase() == theVote.toLowerCase()) {
+      if (name.toLowerCase() == theVote.toLowerCase()) {
         Player.votes.add(Player.allThePlayers[i]);
       }
     }

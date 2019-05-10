@@ -108,7 +108,7 @@ class Game {
   static int numOfPlayers; //change to get from database later
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
-  static String partyId;
+  static String partyId = "-LeSEXT4_K3naMlYfoPr";
 
 
   //Make this unBad - Pass a player, kill that player, change game info based on that.
@@ -479,6 +479,10 @@ main() async {                                                                  
 
 
   Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
+
+  for (int i = 0; i < Player.allThePlayers.length; i++) {
+    Player.allThePlayers[i].displayDetails();
+  }
   //Game.setup
 
   /*

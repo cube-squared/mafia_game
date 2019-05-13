@@ -243,7 +243,7 @@ class Game {
   static void nightPhase() {
     sleepyTime = true;
     stdout.writeln("night night");
-//Doctor Bit
+//Doctor Bit                                                                    // Change once voting card is done
     for (int i = 0; i < numOfDoctors; i++) {
       stdout.writeln("Doctor ${i + 1} choose who to save.");
       String savedDude = stdin.readLineSync();
@@ -266,6 +266,7 @@ class Game {
     return null;
   }
 
+  // BASICALLY IS UNNECESSARY, REMAKE ONCE VOTING CARD ON UI IS DONE
   static List<Player> getVotes(List<Player> votingPlayers) {
     List<Player> votes = [];
 

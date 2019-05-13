@@ -6,14 +6,14 @@ import 'game_database.dart';
 
 // void main() => runApp(MyApp());
 void main() async {
-
+  /*
   // code here
   Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
   for (int i = 0; i < Player.allThePlayers.length; i++) {
     Player.allThePlayers[i].displayDetails();
-  }
+  } */
 
-  //runApp(MyApp());
+  runApp(MyApp());
 }
 
 

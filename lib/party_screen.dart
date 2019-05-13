@@ -175,10 +175,20 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
 
         // locked
 
-        Row(
+        /*Row(
           children: <Widget>[
             Checkbox(value: locked, onChanged: _lockedChanged),
             Text("Lock Party"),
+          ],
+        ),*/
+
+        Row(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Theme:"),
+            ),
+            ThemeSelector(),
           ],
         ),
 
@@ -187,7 +197,7 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
             child: Text('Create'),
             onPressed: () {
               if (int.parse(maxNumPlayers.text) > 1) {
-                GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked).then((String key) {
+                GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked, globals.themeDropdownValue.toLowerCase()).then((String key) {
                   GameDatabase.joinParty(key, globals.user, true);
                   Navigator.pop(context);
                   Navigator.push(
@@ -205,16 +215,45 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
   }
 }
 
-class RoomListTile extends StatefulWidget {
+class ThemeSelector extends StatefulWidget {
   @override
-  _RoomListTileState createState() => _RoomListTileState();
+  _ThemeSelectorState createState() => _ThemeSelectorState();
 }
 
-class _RoomListTileState extends State<RoomListTile> {
+class _ThemeSelectorState extends State<ThemeSelector> {
+
+  String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
+  @override
+  void initState() {
+
+    GameDatabase.getAllThemes().then((List<String> themes) {
+      setState(() {
+        globals.themeDropdownList = [];
+        themes.forEach((String theme) {
+          globals.themeDropdownList.add(DropdownMenuItem<String>(child: Text(capitalize(theme)), value: theme));
+        });
+      });
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
 
+
+    print("THEMELIST: " + globals.themeDropdownList[0].child.toString());
+    print("THEIR THING: " + <String>['One', 'Two', 'Free', 'Four'].map<DropdownMenuItem<String>>((String value) {return DropdownMenuItem<String>(value: value, child: Text(value),);}).toList().toString());
+
+    return DropdownButton<String> (
+      value: globals.themeDropdownValue,
+      onChanged: (String newValue) {
+        setState(() {
+          globals.themeDropdownValue = newValue;
+        });
+      },
+      items: globals.themeDropdownList.toList(),
     );
   }
 }

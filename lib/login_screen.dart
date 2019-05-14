@@ -51,17 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Login to Mafia"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.backspace),
-            onPressed: () {
-              GameDatabase.getAllPlayers(Game.partyId).then((List<String> players) => Game.setUp(players));
-              for (int i = 0; i < Player.allThePlayers.length; i++) {
-                Player.allThePlayers[i].displayDetails();
-              }
-            },
-          ),
-        ],
       ),
       body: Center(
         child: Column(

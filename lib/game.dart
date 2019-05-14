@@ -346,6 +346,12 @@ class Game {
       return chosen;
     }
   }
+
+  static void runGame() {
+    for (int i = 0; i < Player.allThePlayers.length; i++) {
+      Player.allThePlayers[i].displayDetails();
+    }
+  }
 }
 
 
@@ -481,9 +487,7 @@ main() async {                                                                  
 
   Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
 
-  for (int i = 0; i < Player.allThePlayers.length; i++) {
-    Player.allThePlayers[i].displayDetails();
-  }
+
   //Game.setup
 
   /*

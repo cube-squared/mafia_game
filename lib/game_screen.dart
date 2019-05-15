@@ -77,6 +77,7 @@ class DayNightHeading extends StatefulWidget {
 class _DayNightHeadingState extends State<DayNightHeading> {
   @override
   Widget build(BuildContext context) {
+
     String phase;
     Color phaseColor;
     if (widget.day) {
@@ -87,32 +88,55 @@ class _DayNightHeadingState extends State<DayNightHeading> {
       phaseColor = Colors.purple;
     }
 
+    // Player Information Card
     return Padding(
       padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
       child: Card (
           child: Container (
             padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
             width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // User and Role information
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text("$phase Phase", style: TextStyle(fontSize: 30, color: phaseColor)),
-                    Text("Day " + widget.dayNum.toString(), style: TextStyle(fontSize: 20)),
-                  ],
-                ),
-                Column(
-                  children: <Widget>[
-                    Text("You are", style: TextStyle(fontSize: 12)),
+
                     Row(
                       children: <Widget>[
-                        Text("Mafia", style: TextStyle(fontSize: 25, color: Colors.red)),
-                        Icon(MdiIcons.hatFedora, color: Colors.red, size: 30),
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(globals.user.photoUrl),
+                          radius: 35,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(globals.user.displayName, textScaleFactor: 1.5,),
+                        ),
+                      ],
+                    ),
+
+                    // Role information
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        // Get role from Firebase
+                        Text("Doctor", style: TextStyle(fontSize: 25, color: Colors.blue)),
+                        // Text("Doctor", style: TextStyle(fontSize: 25, color: Colors.blue)),
+                        Icon(MdiIcons.doctor, color: Colors.blue, size: 30),
                       ],
                     ),
                   ],
+                ),
+
+                // TODO: Create a description of the role using a text widget
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text("Your role is the doctor. Your duty is to save the innocent and get rid of the mafia."),
+                    ]
+                  ),
                 ),
               ],
             ),

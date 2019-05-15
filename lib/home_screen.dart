@@ -21,7 +21,8 @@ class _HomeScreenTabbedState extends State<HomeScreenTabbed> {
 
   @override
   void initState() {
-    UserDatabase.getSettings(globals.user.uid, context);
+    if (globals.user != null)
+      UserDatabase.getSettings(globals.user.uid, context);
     super.initState();
   }
 

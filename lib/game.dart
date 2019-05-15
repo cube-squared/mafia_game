@@ -1,7 +1,12 @@
 library game_package;
 
 import 'dart:io';
+import 'dart:async';
 import 'dart:math';
+import 'game_database.dart';
+
+
+
 
 abstract class Player {
   static List<Player> votes = [];
@@ -10,34 +15,43 @@ abstract class Player {
   static List<Player> mafiaMembers = [];
 
   String uid; //so we know which player players are players in the playing.
-  String team;
-  String role;
-  String name;
+  String team;  //never changes
+  String role;  //never changes
+  String name;  //never changes
+  /*
+
   bool status;
   bool saved;
+  */
+
+  //UPDATED FOR FIREBASE
 
   //getters and setters duh
-  void setTeam(String team) {
+  void setTeam(String team, String id) {
     this.team = team;
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "team", team);
   }
 
-  void setRole(String role) {
+  void setRole(String role, String id) {
     this.role = role;
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "role", role);
   }
 
-  void setName(String name) {
+  void setName(String name, String id) {
     this.name = name;
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "name", name);
   }
 
-  void setStatus(bool status) {
-    this.status = status;
+  void setStatus(bool status, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "alive", status);
   }
 
-  void setSaved(bool saved) {
-    this.saved = saved;
+  void setSaved(bool saved, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "saved", saved);
   }
 
-  String getTeam() {
+
+   String getTeam() {
     return team;
   }
 
@@ -48,33 +62,36 @@ abstract class Player {
   String getName() {
     return name;
   }
-
-  bool getStatus() {
-    return status;
+  //unessesary
+  Future<bool> getStatus(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "alive");
   }
 
-  bool getSaved() {
-    return saved;
+  Future<bool> getSaved(String id) {
+    return GameDatabase.getPlayerAttribute(Game.partyId, id, "saved");
   }
+
+
 
 //toString (shhh)
-  void displayDetails() {
+  void displayDetails() async {
     print("uid: " + uid);
-    print("Name: " + name);
-    print("Role: " + role);
-    print("Team: " + team);
-    if (status) {
+    print("Name: " + getName());
+    print("Role: " + getRole());
+    print("Team: " + getTeam());
+    if (await getStatus(uid)) {
       print("Status: Alive\n");
     } else {
       print("Status: Dead\n");
     }
   }
 
-//gets each players vote.
-  static void vote(String theVote) {
+//F1X TH1S
+  static void vote(String theVote) async {
+    String name;
     for (int i = 0; i < Player.allThePlayers.length; i++) {
-      if (Player.allThePlayers[i].getName().toLowerCase() ==
-          theVote.toLowerCase()) {
+      name = Player.allThePlayers[i].getName();
+      if ( name.toLowerCase() == theVote.toLowerCase()) {
         Player.votes.add(Player.allThePlayers[i]);
       }
     }
@@ -91,8 +108,11 @@ class Game {
   static int numOfPlayers; //change to get from database later
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
+  static String partyId;
+
 
   //Make this unBad - Pass a player, kill that player, change game info based on that.
+  /*
   static void makePlayersDead() {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getStatus()) {
@@ -112,34 +132,72 @@ class Game {
     }
   }
 
-  static void assignRoles(List<String> playerList) {
-    numOfPlayers = playerList.length;
-    int mafiaAssigned = 0;
-    int doctorsAssigned = 0;
+  */
 
-    playerList.shuffle();
 
-    for (int i = 0; i < numOfPlayers; i++) {
-      if (mafiaAssigned < numOfMafia) {
-        print("${playerList[i]} is now mafia. \n");
-        new Mafia(playerList[i]);
-        mafiaAssigned++;
-      } else if (doctorsAssigned < numOfDoctors) {
-        print("${playerList[i]} is now a doctor. \n");
-        new Doctor(playerList[i]);
-        doctorsAssigned++;
+  //UPDATED FOR FIREBASE INTEGRATION v2
+
+  static void makePlayersDead() async{
+    for (int i = 0; i < Player.allThePlayers.length; i++) {
+      if (await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "alive")) {
+        Player.allThePlayers[i].setSaved(false, Player.allThePlayers[i].uid);
       } else {
-        print("${playerList[i]} is now an innocent. \n");
-        new Innocent(playerList[i]);
+        if (Player.allThePlayers[i].getRole() == 'Doctor') numOfDoctors--;
+        if (Player.allThePlayers[i].getRole() == 'Mafia') {
+          numOfMafia--;
+          for (int j = 0; j < Player.mafiaMembers.length; j++) {
+            if (Player.allThePlayers[i] == Player.mafiaMembers[j])
+              Player.mafiaMembers.removeAt(j);
+          }
+        }
+        Player.deadDudes.add(Player.allThePlayers[i].getName());
+        Player.allThePlayers.removeAt(i);
       }
     }
   }
 
+  //RUNS FIRST
+
+  static void setUp(List<String> playerIdList) async{
+    assignRoles(playerIdList);
+    String name;
+    for(int i = 0; i < Player.allThePlayers.length; i++){
+      name = await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "name");
+      Player.allThePlayers[i].setName(name, Player.allThePlayers[i].uid);
+    }
+  }
+
+  //UPDATED FOR FIREBASE INTEGRATION
+
+  static void assignRoles(List<String> playerIdList) {
+    numOfPlayers = playerIdList.length;
+    int mafiaAssigned = 0;
+    int doctorsAssigned = 0;
+
+    playerIdList.shuffle();
+
+    for (int i = 0; i < numOfPlayers; i++) {
+      if (mafiaAssigned < numOfMafia) {
+        print("${playerIdList[i]} is now mafia. \n");
+        new Mafia(playerIdList[i]);
+        mafiaAssigned++;
+      } else if (doctorsAssigned < numOfDoctors) {
+        print("${playerIdList[i]} is now a doctor. \n");
+        new Doctor(playerIdList[i]);
+        doctorsAssigned++;
+      } else {
+        print("${playerIdList[i]} is now an innocent. \n");
+        new Innocent(playerIdList[i]);
+      }
+    }
+  }
+
+  //UPDATED FOR FIREBASE
   //Make this return a boolean, and then end the game based on that.
-  static void checkWin() {
+  static void checkWin() async {
     int counter = 0;
     for (int i = 0; i < Player.allThePlayers.length; i++) {
-      if (Player.allThePlayers[i].getRole() == 'Mafia') {
+      if (Player.allThePlayers[i].getRole == 'Mafia') {
         counter++;
       }
     }
@@ -289,8 +347,13 @@ class Game {
   }
 }
 
+
+
 class Mafia extends Player {
-  Mafia(String name) {
+
+  //UPDATED FOR FIREBASE INTEGRATION
+  Mafia(String id) {
+    /*
     team = 'Mafia';
     role = 'Mafia';
     this.name = name;
@@ -298,15 +361,25 @@ class Mafia extends Player {
     saved = false;
     Player.mafiaMembers.add(this);
     Player.allThePlayers.add(this);
+    */
+    uid = id;
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "mafia");
+    team = 'Mafia';
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "mafia");
+    role = 'Mafia';
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "alive", true);
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "saved", false);
+    Player.mafiaMembers.add(this);
+    Player.allThePlayers.add(this);
   }
 
 //For mafia at night to kill people
-  static void killPlayer(Player player) {
-    if (player == null) {
+  static void killPlayer(Player player) async{
+    if(player == null) {
     } else {
-      if (player.saved) {
+      if (await player.getSaved(player.uid)) {
       } else {
-        player.setStatus(false);
+        player.setStatus(false, player.uid);
       }
     }
   }
@@ -315,18 +388,32 @@ class Mafia extends Player {
 class Doctor extends Player {
   static bool savedSelf;
 
-  Doctor(String name) {
-    savedSelf = false;
+  //UPDATED FOR FIREBASE INTEGRATION
+
+  Doctor(String id) {
+    /*
+
     team = 'Town';
     role = 'Doctor';
     this.name = name;
     status = true;
     saved = false;
     Player.allThePlayers.add(this);
+    */
+    savedSelf = false;
+
+    uid = id;
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "town");
+    team = 'Town';
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "doctor");
+    role = 'Doctor';
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "alive", true);
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "saved", false);
+    Player.allThePlayers.add(this);
   }
 
 //for doctor at night to save person
-  static void savePlayer(Player player) {
+  static void savePlayer(Player player) async{
     String docName;
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getRole() == "Doctor") {
@@ -336,8 +423,8 @@ class Doctor extends Player {
     if (player == null) {
     } else {
       if (!savedSelf) {
-        if (player.saved == false) {
-          player.saved = true;
+        if (await player.getSaved(player.uid) == false) {
+           player.setSaved(true, player.uid);
         }
         if (player.getName() == docName) {
           savedSelf = true;
@@ -345,8 +432,8 @@ class Doctor extends Player {
       } else {
         if (player.getName() == docName) {
         } else {
-          if (player.saved == false) {
-            player.saved = true;
+          if (await player.getSaved(player.uid) == false) {
+            player.setSaved(true, player.uid);
           }
         }
       }
@@ -356,17 +443,29 @@ class Doctor extends Player {
 
 //useless
 class Innocent extends Player {
-  Innocent(String name) {
+  Innocent(String id) {
+    /*
     team = 'Town';
     role = 'Innocent';
     this.name = name;
     status = true;
     saved = false;
     Player.allThePlayers.add(this);
+    */
+
+    uid = id;
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "town");
+    team = 'Town';
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "innocent");
+    role = 'Innocent';
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "alive", true);
+    GameDatabase.setPlayerAttribute(Game.partyId, uid, "saved", false);
+    Player.allThePlayers.add(this);
   }
 }
 
-main() {
+main() async {                                                                  //very likely to fuck up
+  /*
   List<String> listOfPlayers = [];
   listOfPlayers.add("Wyatt");
   listOfPlayers.add("Matthew");
@@ -376,19 +475,27 @@ main() {
   listOfPlayers.add("Daryl");
   listOfPlayers.add("Trey");
   listOfPlayers.add("Scott");
-  Game.assignRoles(listOfPlayers);
+  */
 
+
+  Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
+  //Game.setup
+
+  /*
   //Runs literally the whole game until someone wins.
   while (!Game.winner) {
     Game.nightPhase();
     Game.dayPhase();
   }
+
   print('${Game.teamWinner} won the game!');
 
 //Testing Thing
   for (int i = 0; i < Player.allThePlayers.length; i++)
     print(Player.allThePlayers[i].getName());
+    */
 }
+
 
 //IDEAL MAIN FUNCTION
 /*main(){

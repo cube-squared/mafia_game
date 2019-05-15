@@ -27,7 +27,7 @@ class _GameScreenState extends State<GameScreen> {
       ),
       body: ListView(
         children: <Widget>[
-          DayNightHeading(day: true, dayNum: 10,),
+          DayNightHeading(day: true, dayNum: 10, uid: widget.uid),
           Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
           PlayerSelector(players: ["Spencer", "Daryl", "Matt", "Crockett", "Wyatt", "Elizabeth", "Scott"], numSelect: 2, prompt: "Select 2 people to kill:", selectedIcon: Icon(MdiIcons.skullOutline, color: Colors.red),),
         ],
@@ -65,8 +65,9 @@ class _GameScreenState extends State<GameScreen> {
 
 
 class DayNightHeading extends StatefulWidget {
-  DayNightHeading({Key key, this.day, this.dayNum}) : super(key: key);
+  DayNightHeading({Key key, this.day, this.dayNum, this.uid}) : super(key: key);
 
+  final String uid;
   final bool day;
   final int dayNum;
 
@@ -77,6 +78,13 @@ class DayNightHeading extends StatefulWidget {
 class _DayNightHeadingState extends State<DayNightHeading> {
   @override
   Widget build(BuildContext context) {
+
+    String role;
+    GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
+
+    print("Your player ID is: " + globals.user.uid.toString());
+    print("Your party ID is: " + widget.uid.toString());
+    print("Your role is: " + role.toString());
 
     String phase;
     Color phaseColor;
@@ -115,12 +123,12 @@ class _DayNightHeadingState extends State<DayNightHeading> {
                       ],
                     ),
 
-                    // Role information
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
-                        // Get role from Firebase
-                        Text("Doctor", style: TextStyle(fontSize: 25, color: Colors.blue)),
+                        // TODO: Get role from Firebase
+                        Text("", style: TextStyle(fontSize: 25, color: Colors.blue)),
                         // Text("Doctor", style: TextStyle(fontSize: 25, color: Colors.blue)),
                         Icon(MdiIcons.doctor, color: Colors.blue, size: 30),
                       ],
@@ -128,12 +136,13 @@ class _DayNightHeadingState extends State<DayNightHeading> {
                   ],
                 ),
 
-                // TODO: Create a description of the role using a text widget
+
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
+                      // TODO: Description needs to update through Firebase
                       Text("Your role is the doctor. Your duty is to save the innocent and get rid of the mafia."),
                     ]
                   ),
@@ -245,7 +254,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       Color bkgColor = Theme.of(context).cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(name)) {
-        bkgColor = Colors.red[100];
+        if (globals.darkMode)
+          bkgColor = Colors.red.withOpacity(.5);
+        else
+          bkgColor = Colors.red[100];
         icon = widget.selectedIcon;
       }
       widgets.add(Card(

@@ -47,53 +47,60 @@ class _PartyScreenState extends State<PartyScreen> {
           int mPlayers = map['mPlayers'] as int;
           bool locked = map['locked'] as bool;
           Icon leadingIcon;
-          if (cPlayers >= mPlayers) {
-            leadingIcon = Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
-          } else if (locked){
-            leadingIcon = Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
-          } else {
-            leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
-          }
-          if (status == "open") {
-            return new Column(
-              children: <Widget>[
-                new ListTile(
-                  title: new Text('$name'),
-                  leading: leadingIcon,
-                  subtitle: Row(
-                    children: <Widget>[
-                      //Icon(MdiIcons.crown, color: Colors.orangeAccent),
-                      Text("Leader: " + leader),
-                    ],
-                  ),
-                  trailing: Text(
-                    cPlayers.toString() + "/" + mPlayers.toString(),
-                    textScaleFactor: 1.5,),
-                  onTap: () {
-                    if (cPlayers < mPlayers) {
-                      if (!locked) {
-                        GameDatabase.joinParty(key, globals.user, false);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>
-                              JoinedPartyScreen(uid: key)),
-                        );
+          try {
+            if (cPlayers >= mPlayers) {
+              leadingIcon =
+                  Icon(MdiIcons.accountRemoveOutline, color: Colors.red);
+            } else if (locked) {
+              leadingIcon =
+                  Icon(MdiIcons.lockOutline, color: Colors.orangeAccent);
+            } else {
+              leadingIcon = Icon(MdiIcons.lockOpenOutline, color: Colors.green);
+            }
+            if (status == "open") {
+              return new Column(
+                children: <Widget>[
+                  new ListTile(
+                    title: new Text('$name'),
+                    leading: leadingIcon,
+                    subtitle: Row(
+                      children: <Widget>[
+                        //Icon(MdiIcons.crown, color: Colors.orangeAccent),
+                        Text("Leader: " + leader),
+                      ],
+                    ),
+                    trailing: Text(
+                      cPlayers.toString() + "/" + mPlayers.toString(),
+                      textScaleFactor: 1.5,),
+                    onTap: () {
+                      if (cPlayers < mPlayers) {
+                        if (!locked) {
+                          GameDatabase.joinParty(key, globals.user, false);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) =>
+                                JoinedPartyScreen(uid: key)),
+                          );
+                        } else {
+                          UITools.showBasicPopup(
+                              context, "Unable to join party",
+                              "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
+                        }
                       } else {
                         UITools.showBasicPopup(context, "Unable to join party",
-                            "Yeah, sorry. This party is locked. We haven't really programmed anything for locked parties yet, so you just can't join this one. (If it makes you feel better, literally no one can join)");
+                            "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
                       }
-                    } else {
-                      UITools.showBasicPopup(context, "Unable to join party",
-                          "Yeah, sorry. This party is already full. Please wait until someone leaves it. Or, you know, you could just join a different party.");
-                    }
-                  },
-                ),
-                new Divider(
-                  height: 2.0,
-                ),
-              ],
-            );
-          } else {
+                    },
+                  ),
+                  new Divider(
+                    height: 2.0,
+                  ),
+                ],
+              );
+            } else {
+              return Container(width: 0, height: 0,);
+            }
+          } catch (e) {
             return Container(width: 0, height: 0,);
           }
         },
@@ -168,10 +175,20 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
 
         // locked
 
-        Row(
+        /*Row(
           children: <Widget>[
             Checkbox(value: locked, onChanged: _lockedChanged),
             Text("Lock Party"),
+          ],
+        ),*/
+
+        Row(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Theme:"),
+            ),
+            ThemeSelector(),
           ],
         ),
 
@@ -180,7 +197,7 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
             child: Text('Create'),
             onPressed: () {
               if (int.parse(maxNumPlayers.text) > 1) {
-                GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked).then((String key) {
+                GameDatabase.createParty(partyName.text, int.parse(maxNumPlayers.text), globals.user.uid, globals.user.displayName, locked, globals.themeDropdownValue.toLowerCase()).then((String key) {
                   GameDatabase.joinParty(key, globals.user, true);
                   Navigator.pop(context);
                   Navigator.push(
@@ -198,16 +215,45 @@ class _CreatePartyDialogState extends State<CreatePartyDialog> {
   }
 }
 
-class RoomListTile extends StatefulWidget {
+class ThemeSelector extends StatefulWidget {
   @override
-  _RoomListTileState createState() => _RoomListTileState();
+  _ThemeSelectorState createState() => _ThemeSelectorState();
 }
 
-class _RoomListTileState extends State<RoomListTile> {
+class _ThemeSelectorState extends State<ThemeSelector> {
+
+  String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
+  @override
+  void initState() {
+
+    GameDatabase.getAllThemes().then((List<String> themes) {
+      setState(() {
+        globals.themeDropdownList = [];
+        themes.forEach((String theme) {
+          globals.themeDropdownList.add(DropdownMenuItem<String>(child: Text(capitalize(theme)), value: theme));
+        });
+      });
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
 
+
+    print("THEMELIST: " + globals.themeDropdownList[0].child.toString());
+    print("THEIR THING: " + <String>['One', 'Two', 'Free', 'Four'].map<DropdownMenuItem<String>>((String value) {return DropdownMenuItem<String>(value: value, child: Text(value),);}).toList().toString());
+
+    return DropdownButton<String> (
+      value: globals.themeDropdownValue,
+      onChanged: (String newValue) {
+        setState(() {
+          globals.themeDropdownValue = newValue;
+        });
+      },
+      items: globals.themeDropdownList.toList(),
     );
   }
 }

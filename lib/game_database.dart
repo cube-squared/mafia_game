@@ -188,7 +188,17 @@ class GameDatabase {
     return data;
   }
 
-
+  static Future<List<String>> getAllPlayersNames(String partyUID) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    List<String> data = await ref.child('parties').child(partyUID).child("players").once().then((DataSnapshot snap) {
+      List<String> players = new List<String>();
+      snap.value.forEach((player) {
+        players.add(player["name"]);
+      });
+      return players;
+    });
+    return data;
+  }
 
 }
 

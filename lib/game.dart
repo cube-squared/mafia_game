@@ -63,7 +63,6 @@ abstract class Player {
     return name;
   }
 
-  //unessesary
   Future<bool> getStatus(String id) {
     return GameDatabase.getPlayerAttribute(Game.partyId, id, "alive");
   }
@@ -108,7 +107,7 @@ class Game {
   static int numOfPlayers; //change to get from database later
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
-  static String partyId = "-LeSEXT4_K3naMlYfoPr";
+  static String partyId = "-Lew9d89Ycz74hh798Lo";
 
 
   //Make this unBad - Pass a player, kill that player, change game info based on that.
@@ -156,16 +155,6 @@ class Game {
     }
   }
 
-  //RUNS FIRST
-
-  static void setUp(List<String> playerIdList) async{
-    assignRoles(playerIdList);
-    String name;
-    for(int i = 0; i < Player.allThePlayers.length; i++){
-      name = await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "name");
-      Player.allThePlayers[i].setName(name, Player.allThePlayers[i].uid);
-    }
-  }
 
   //UPDATED FOR FIREBASE INTEGRATION
 
@@ -210,9 +199,19 @@ class Game {
     }
   }
 
+
+
+
+
+
+
+
+
+
+
   static void dayPhase() {
     makePlayersDead();
-    stdout.writeln("Wakey wakey!");
+    stdout.writeln("Wakey wakey!");  //change to narration
     //Who died?
     sleepyTime = false;
     for (int i = 0; i < Player.deadDudes.length; i++) {
@@ -240,6 +239,18 @@ class Game {
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
   static void nightPhase() {
     sleepyTime = true;
     stdout.writeln("night night");
@@ -266,6 +277,10 @@ class Game {
     return null;
   }
 
+
+
+
+
   // BASICALLY IS UNNECESSARY, REMAKE ONCE VOTING CARD ON UI IS DONE
   static List<Player> getVotes(List<Player> votingPlayers) {
     List<Player> votes = [];
@@ -281,6 +296,17 @@ class Game {
     }
     return votes;
   }
+
+
+
+
+
+
+
+
+
+
+
 
 //Sort idea -> sort and count, compare counts to find highest
 // While loop idea -> run through list over and over counting instances of each name, keep highest
@@ -347,10 +373,36 @@ class Game {
     }
   }
 
+
+
+
+
+
+
+
+  //RUNNING THE GAME Methods
+
+  //RUNS FIRST, creates allThePlayers list
+
+  static void setUp(List<String> playerIdList) async{
+    assignRoles(playerIdList);
+    String name;
+    for(int i = 0; i < Player.allThePlayers.length; i++){
+      name = await GameDatabase.getPlayerAttribute(Game.partyId, Player.allThePlayers[i].uid, "name");
+      Player.allThePlayers[i].setName(name, Player.allThePlayers[i].uid);
+    }
+  }
+
   static void runGame() {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       Player.allThePlayers[i].displayDetails();
     }
+
+
+  }
+
+  static void endGame() {
+    Player.allThePlayers.clear();
   }
 }
 

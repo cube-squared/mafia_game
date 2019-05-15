@@ -15,6 +15,7 @@ class JoinedPartyScreen extends StatefulWidget {
 
   final String uid;
 
+
   @override
   _JoinedPartyScreenState createState() => _JoinedPartyScreenState();
 }
@@ -77,7 +78,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
             onPressed: () {
            GameDatabase.getAllPlayers(Game.partyId).then((List<String> players) => Game.setUp(players));
             Game.runGame();
-          },
+              },
             ),
       ],
 

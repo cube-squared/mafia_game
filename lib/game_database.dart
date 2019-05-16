@@ -177,6 +177,27 @@ class GameDatabase {
 
   //  ------------------------- IN GAME FUNCTIONS -------------------------
 
+  static Future<StreamSubscription<Event>> getGameInfoStream(String uid, void onData(Map<String, dynamic> map)) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    StreamSubscription<Event> subscription = ref.child("parties").child(uid).onValue.listen((Event event) {
+      var info = <String, dynamic> {
+        'status' : 'open',
+        'cPlayers' : 0,
+        'theme' : "original",
+        'players' : [],
+      };
+
+      info['status'] = event.snapshot.value["status"];
+      info['cPlayers'] = event.snapshot.value['cPlayers'];
+      info['theme'] = event.snapshot.value['theme'];
+      info['players'] = event.snapshot.value['players'];
+
+      onData(info);
+    });
+
+    return subscription;
+  }
+
   static Future<void> setPlayerAttribute(String partyUID, String playerUID, String attribute, dynamic value) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(partyUID).child("players").child(playerUID).child(attribute).set(value);

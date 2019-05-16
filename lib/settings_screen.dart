@@ -31,6 +31,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         children: <Widget>[
           ListTile(
+            title: Text("All settings are synced with your account.")
+          ),
+          ListTile(
             title: Text("Dark Mode"),
             subtitle: Text("For those who like their eyes"),
             trailing: Switch(

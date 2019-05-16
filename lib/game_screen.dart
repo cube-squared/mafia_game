@@ -21,7 +21,22 @@ class GameScreen extends StatefulWidget {
   _GameScreenState createState() => _GameScreenState();
 }
 
+Map<String, dynamic> gamedata;
 class _GameScreenState extends State<GameScreen> {
+
+  StreamSubscription infoSubscription;
+
+  @override
+  void initState() {
+    GameDatabase.getGameInfoStream(widget.uid, _updateInfo).then((StreamSubscription s) => infoSubscription = s);
+    super.initState();
+  }
+
+  void _updateInfo(Map<String, dynamic> map) {
+    setState(() {
+      gamedata = map;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +124,7 @@ class _DayNightHeadingState extends State<DayNightHeading> {
                     Text("You are", style: TextStyle(fontSize: 12)),
                     Row(
                       children: <Widget>[
-                        Text("Mafia", style: TextStyle(fontSize: 25, color: Colors.red)),
+                        Text(gamedata["players"][globals.user.uid]["role"], style: TextStyle(fontSize: 25, color: Colors.red)),
                         Icon(MdiIcons.hatFedora, color: Colors.red, size: 30),
                       ],
                     ),

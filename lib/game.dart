@@ -398,6 +398,8 @@ class Game {
       Player.allThePlayers[i].displayDetails();
     }
 
+    Mafia.killPlayer(Player.allThePlayers[1]);
+    endGame();
 
   }
 

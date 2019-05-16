@@ -76,7 +76,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
              new IconButton(
            icon: Icon(Icons.backspace),
             onPressed: () {
-           GameDatabase.getAllPlayers(Game.partyId).then((List<String> players) => Game.setUp(players));
+            //GameDatabase.getAllPlayers(Game.partyId).then((List<String> players) => Game.setUp(players));
             Game.runGame();
               },
             ),

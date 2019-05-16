@@ -24,7 +24,7 @@ abstract class Player {
   bool saved;
   */
 
-  //UPDATED FOR FIREBASE
+  //UPDATED FOR FIRE BASE
 
   //getters and setters duh
   void setTeam(String team, String id) {
@@ -72,7 +72,6 @@ abstract class Player {
   }
 
 
-//toString (shhh)
   void displayDetails() async {
     print("uid: " + uid);
     print("Name: " + getName());
@@ -134,7 +133,7 @@ class Game {
   */
 
 
-  //UPDATED FOR FIREBASE INTEGRATION v2
+  //UPDATED FOR FIRE BASE INTEGRATION v2
 
   static void makePlayersDead() async{
     for (int i = 0; i < Player.allThePlayers.length; i++) {
@@ -156,7 +155,7 @@ class Game {
   }
 
 
-  //UPDATED FOR FIREBASE INTEGRATION
+  //UPDATED FOR FIRE BASE INTEGRATION
 
   static void assignRoles(List<String> playerIdList) {
     numOfPlayers = playerIdList.length;
@@ -181,7 +180,7 @@ class Game {
     }
   }
 
-  //UPDATED FOR FIREBASE
+  //UPDATED FOR FIRE BASE
   //Make this return a boolean, and then end the game based on that.
   static void checkWin() async {
     int counter = 0;
@@ -221,7 +220,7 @@ class Game {
     checkWin();
 //oh people talk Chat();
 
-//Vote for lynchin
+//Vote for lynching
     isMafiaVoting = false;
     if (winner == false) {
       stdout.writeln("Whose ready for a town hanging?");
@@ -412,7 +411,7 @@ class Game {
 
 class Mafia extends Player {
 
-  //UPDATED FOR FIREBASE INTEGRATION
+  //UPDATED FOR FIRE BASE INTEGRATION
   Mafia(String id) {
     /*
     team = 'Mafia';
@@ -449,7 +448,7 @@ class Mafia extends Player {
 class Doctor extends Player {
   static bool savedSelf;
 
-  //UPDATED FOR FIREBASE INTEGRATION
+  //UPDATED FOR FIRE BASE INTEGRATION
 
   Doctor(String id) {
     /*

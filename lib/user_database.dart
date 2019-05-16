@@ -4,6 +4,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:intl/intl.dart';
+import 'globals.dart' as globals;
+import 'main.dart';
 
 class UserDatabase {
 
@@ -12,12 +14,18 @@ class UserDatabase {
     if (!alreadyInDB) {
       DatabaseReference ref = FirebaseDatabase.instance.reference();
 
+      var settings = <String, dynamic>{
+        'darkMode' : globals.darkMode,
+        'confirmOnPartyExit' : globals.confirmOnPartyExit,
+      };
+
       var user = <String, dynamic>{
         'name' : fbuser.displayName,
         'email' : fbuser.email,
         'nickname' : '',
         'created': _getDateNow(),
         'lastLogin' : fbuser.metadata.lastSignInTimestamp,
+        'settings' : settings,
       };
 
       ref.child("users").child(fbuser.uid).set(user);
@@ -28,9 +36,8 @@ class UserDatabase {
 
   static Future<bool> doesUserExist(FirebaseUser fbuser) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
-    String name;
-    ref.child('users').child(fbuser.uid).once().then((DataSnapshot snap) {
-      name = snap.value["name"];
+    String name = await ref.child('users').child(fbuser.uid).once().then((DataSnapshot snap) {
+      return snap.value["name"];
     });
 
     if (name == fbuser.displayName)
@@ -60,43 +67,20 @@ class UserDatabase {
     });
   }
 
-  static Future<StreamSubscription<Event>> getNameStream(String mountainKey,
-      void onData(String name)) async {
-    String accountKey = await _getAccountKey();
+  static Future<void> setSetting(String uid, String setting, dynamic value) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("users").child(uid).child("settings").child(setting).set(value);
+  }
 
-    StreamSubscription<Event> subscription = FirebaseDatabase.instance
-        .reference()
-        .child("accounts")
-        .child(accountKey)
-        .child("mountains")
-        .child(mountainKey)
-        .child("name")
-        .onValue
-        .listen((Event event) {
-      String name = event.snapshot.value as String;
-      if (name == null) {
-        name = "";
-      }
-      onData(name);
+  static Future<void> getSettings(String uid, BuildContext context) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("users").child(uid).child("settings").once().then((DataSnapshot snap) {
+      globals.darkMode = snap.value["darkMode"] as bool;
+      globals.confirmOnPartyExit = snap.value["confirmOnPartyExit"] as bool;
+      AppBuilder.of(context).rebuild();
     });
-
-    return subscription;
   }
 
-  static Future<Query> queryMountains() async {
-    String accountKey = await _getAccountKey();
-
-    return FirebaseDatabase.instance
-        .reference()
-        .child("accounts")
-        .child(accountKey)
-        .child("mountains")
-        .orderByChild("name");
-  }
-}
-
-Future<String> _getAccountKey() async {
-  return '12345678';
 }
 
 /// requires: intl: ^0.15.2

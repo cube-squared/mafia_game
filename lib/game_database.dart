@@ -21,7 +21,7 @@ class GameDatabase {
         .orderByChild("name");
   }
 
-  static Future<String> createParty(String name, int maxPlayers, String leaderUID, String leaderName, bool locked) async {
+  static Future<String> createParty(String name, int maxPlayers, String leaderUID, String leaderName, bool locked, String theme) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     var party = <String, dynamic>{
       'name' : name,
@@ -32,6 +32,7 @@ class GameDatabase {
       'leaderName' : leaderName,
       'locked' : locked,
       'status' : 'open',
+      'theme' : theme,
     };
 
     DatabaseReference dbParty = ref.child("parties").push();
@@ -118,6 +119,7 @@ class GameDatabase {
         'leaderName' : "Notch",
         'leaderUID' : "",
         'chat' : [],
+        'theme' : "original",
       };
 
       info['name'] = event.snapshot.value["name"];
@@ -127,6 +129,7 @@ class GameDatabase {
       info['leaderUID'] = event.snapshot.value['leaderUID'];
       info['cPlayers'] = event.snapshot.value['players'].length;
       info['chat'] = event.snapshot.value['chat'];
+      info['theme'] = event.snapshot.value['theme'];
 
       onData(info);
     });
@@ -156,6 +159,18 @@ class GameDatabase {
         .child(uid)
         .child("chat")
         .orderByChild("time");
+  }
+
+  static Future<List<String>> getAllThemes() async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    return ref.child("themes").once().then((DataSnapshot snap) {
+      List<String> themes = new List<String>();
+      snap.value.keys.toList().forEach((dynamic key) {
+        String theme = key as String;
+        themes.add(theme);
+      });
+      return themes;
+    });
   }
 
 
@@ -188,7 +203,17 @@ class GameDatabase {
     return data;
   }
 
-
+  static Future<List<String>> getAllPlayersNames(String partyUID) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    List<String> data = await ref.child('parties').child(partyUID).child("players").once().then((DataSnapshot snap) {
+      List<String> players = new List<String>();
+      snap.value.forEach((key, values) {
+        players.add(values["name"]);
+      });
+      return players;
+    });
+    return data;
+  }
 
 }
 

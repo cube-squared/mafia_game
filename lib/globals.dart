@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 
 // MAIN APPLICATION
 String appName = "Mafia Game";
@@ -16,3 +17,7 @@ bool confirmOnPartyExit = true;
 // PARTY QUERIES (for persistence)
 Query partiesQuery;
 Query chatQuery;
+
+// THEME DROPDOWN (for persistence)
+List<DropdownMenuItem<String>> themeDropdownList = [];
+String themeDropdownValue = "original";

@@ -7,6 +7,10 @@ import 'globals.dart' as globals;
 import 'main.dart';
 import 'chat_screen.dart';
 import 'ui_tools.dart';
+import 'dart:async';
+import 'game.dart';
+import 'dart:math';
+
 
 class GameScreen extends StatefulWidget {
   GameScreen({Key key, this.uid}) : super(key: key);
@@ -21,6 +25,8 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<String> allPlayers;
+    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayers = a);
     return Scaffold (
       appBar: AppBar(
         title: Text("In Game - Day Phase"),
@@ -29,7 +35,7 @@ class _GameScreenState extends State<GameScreen> {
         children: <Widget>[
           DayNightHeading(day: true, dayNum: 10,),
           Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          PlayerSelector(players: ["Spencer", "Daryl", "Matt", "Crockett", "Wyatt", "Elizabeth", "Scott"], numSelect: 2, prompt: "Select 2 people to kill:", selectedIcon: Icon(MdiIcons.skullOutline, color: Colors.red),),
+          //PlayerSelector(players: allPlayers, uid: widget.uid),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -57,12 +63,7 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
-
 }
-
-
-
-
 
 class DayNightHeading extends StatefulWidget {
   DayNightHeading({Key key, this.day, this.dayNum}) : super(key: key);
@@ -144,9 +145,6 @@ class WaitingForPlayers extends StatelessWidget {
   }
 }
 
-
-
-
 class Narration extends StatelessWidget {
   Narration({Key key, this.role, this.text}) : super(key: key);
 
@@ -179,15 +177,11 @@ class Narration extends StatelessWidget {
   }
 }
 
-
-
 class PlayerSelector extends StatefulWidget {
-  PlayerSelector({Key key, this.players, this.numSelect, this.prompt, this.selectedIcon}) : super(key: key);
+  PlayerSelector({Key key, this.players, this.uid}) : super(key: key);
 
   final List<String> players;
-  final int numSelect;
-  final String prompt;
-  final Icon selectedIcon;
+  final String uid;
 
   @override
   _PlayerSelectorState createState() => _PlayerSelectorState();
@@ -195,6 +189,10 @@ class PlayerSelector extends StatefulWidget {
 
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
+  int numberSelected;
+  List<String> allPlayers;
+  String votingPrompt;
+  Icon iconSelected;
 
   void addToSelection(String name) {
     setState(() {
@@ -202,19 +200,49 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         selectedPlayers.remove(name);
         return;
       }
-      if (selectedPlayers.length >= widget.numSelect) {
+      if (selectedPlayers.length >= numberSelected) {
         selectedPlayers.remove(selectedPlayers[0]);
       }
       selectedPlayers.add(name);
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
 
+    String role;
+    GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
+
+    allPlayers = widget.players;
+    numberSelected = 0;
+
+    if (Game.sleepyTime == false) {
+      iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
+      numberSelected = 1;
+      votingPrompt = "Select who you think is the Mafia:";
+    }
+    else if (Game.sleepyTime) {
+      if (role == "doctor") {
+        iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
+        numberSelected = 1;
+        votingPrompt = "Select a player to save:";
+      }
+      else if (role == "mafia") {
+        numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
+        iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
+        if(numberSelected > 1){
+          votingPrompt = "Select " + numberSelected.toString() + "players to kill:";
+        }
+        else if(numberSelected == 1) {
+          votingPrompt = "Select a player to kill:";
+        }
+      }
+    }
+
     // put prompt at top
     List<Widget> widgets = new List<Widget>();
-    widgets.add(Text(widget.prompt, style: TextStyle(fontSize: 20)));
+    widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
     widget.players.forEach((String name) {
@@ -225,7 +253,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
           bkgColor = Colors.red.withOpacity(.5);
         else
           bkgColor = Colors.red[100];
-        icon = widget.selectedIcon;
+        icon = iconSelected;
       }
       widgets.add(Card(
         color: bkgColor,

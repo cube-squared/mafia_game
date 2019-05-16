@@ -185,6 +185,8 @@ class _PartyDetailsState extends State<PartyDetails> {
     });
   }
 
+  String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
   @override
   Widget build(BuildContext context) {
     String lockedText;
@@ -208,9 +210,9 @@ class _PartyDetailsState extends State<PartyDetails> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text("Leader: " + info['leaderName'], style: TextStyle(fontSize: 20),),
-                        Text("Theme: Original", style: TextStyle(fontSize: 20),),
-                        Text(lockedText, style: TextStyle(fontSize: 20),),
-                        Text("Party UID: " + widget.uid, style: TextStyle(fontSize: 15),),
+                        Text("Theme: " + capitalize(info['theme']), style: TextStyle(fontSize: 20),),
+                        //Text(lockedText, style: TextStyle(fontSize: 20),),
+                        //Text("Party UID: " + widget.uid, style: TextStyle(fontSize: 15),),
                       ],
                     ),
                     Column (

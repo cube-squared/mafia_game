@@ -207,8 +207,8 @@ class GameDatabase {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     List<String> data = await ref.child('parties').child(partyUID).child("players").once().then((DataSnapshot snap) {
       List<String> players = new List<String>();
-      snap.value.forEach((player) {
-        players.add(player["name"]);
+      snap.value.forEach((key, values) {
+        players.add(values["name"]);
       });
       return players;
     });

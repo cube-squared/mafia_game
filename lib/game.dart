@@ -62,7 +62,7 @@ abstract class Player {
   String getName() {
     return name;
   }
-
+  //unnecessary
   Future<bool> getStatus(String id) {
     return GameDatabase.getPlayerAttribute(Game.partyId, id, "alive");
   }
@@ -72,6 +72,8 @@ abstract class Player {
   }
 
 
+
+//toString
   void displayDetails() async {
     print("uid: " + uid);
     print("Name: " + getName());
@@ -107,6 +109,7 @@ class Game {
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
   static String partyId = "-Lew9d89Ycz74hh798Lo";
+  static String leaderUid;
 
 
   //Make this unBad - Pass a player, kill that player, change game info based on that.
@@ -157,7 +160,7 @@ class Game {
 
   //UPDATED FOR FIRE BASE INTEGRATION
 
-  static void assignRoles(List<String> playerIdList) {
+  static void assignRoles(List<String> playerIdList) async {
     numOfPlayers = playerIdList.length;
     int mafiaAssigned = 0;
     int doctorsAssigned = 0;
@@ -169,13 +172,22 @@ class Game {
         print("${playerIdList[i]} is now mafia. \n");
         new Mafia(playerIdList[i]);
         mafiaAssigned++;
+        if ( await GameDatabase.getPlayerAttribute(Game.partyId, playerIdList[i], "leader") == true) {
+          leaderUid = playerIdList[i];
+        }
       } else if (doctorsAssigned < numOfDoctors) {
         print("${playerIdList[i]} is now a doctor. \n");
         new Doctor(playerIdList[i]);
         doctorsAssigned++;
+        if ( await GameDatabase.getPlayerAttribute(Game.partyId, playerIdList[i], "leader") == true) {
+          leaderUid = playerIdList[i];
+        }
       } else {
         print("${playerIdList[i]} is now an innocent. \n");
         new Innocent(playerIdList[i]);
+        if ( await GameDatabase.getPlayerAttribute(Game.partyId, playerIdList[i], "leader") == true) {
+          leaderUid = playerIdList[i];
+        }
       }
     }
   }
@@ -392,12 +404,11 @@ class Game {
     }
   }
 
-  static void runGame() {
+  static void runGame() async {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       Player.allThePlayers[i].displayDetails();
     }
-
-    Mafia.killPlayer(Player.allThePlayers[1]);
+    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[1].uid, "murder"));
     endGame();
 
   }

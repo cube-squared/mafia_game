@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'game.dart';
+import 'dart:math';
 
 class GameDatabase {
 
@@ -33,6 +35,7 @@ class GameDatabase {
       'locked' : locked,
       'status' : 'open',
       'theme' : theme,
+      'daytime' : false,
     };
 
     DatabaseReference dbParty = ref.child("parties").push();
@@ -80,6 +83,49 @@ class GameDatabase {
     }
   }
 
+  static Future<String> getNarration(String partyUID, String playerUID, String event){
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    String theme = ref.child("parties").child(partyUID).child("theme").toString();
+    switch (event){
+      case "execution":{
+        return ref.child("themes").child(theme).child("execution").child("1").once().then((DataSnapshot snap) {
+          return snap.value.toString();
+          });
+        }
+      break;
+      case "intro":{
+        String role;
+        GameDatabase.getPlayerAttribute(partyUID, playerUID,"role").then((dynamic r) => role = r);
+        return ref.child("themes").child(theme).child("intro").child(role).once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+      }
+      break;
+      case "murder":{
+        var rng = new Random();
+        String val = (rng.nextInt(3)+1).toString();
+        return ref.child("themes").child(theme).child("murder").child(val).once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+      }
+      break;
+      case "win":{
+        String winner;
+        if(Game.teamWinner == 'Mafia'){
+          winner = 'mafia';
+        } else if (Game.teamWinner == 'Towns People'){
+          winner = 'innocent';
+        } else {
+          winner = 'YamessedupBUD!';
+        }
+        return ref.child("themes").child(theme).child("win").child(winner).once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+      }
+      break;
+    }
+  }
+
   static Future<int> getPartyNumPlayers(String uid) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     int _numPlayers = await ref.child('parties').child(uid).once().then((DataSnapshot snap) {
@@ -120,6 +166,7 @@ class GameDatabase {
         'leaderUID' : "",
         'chat' : [],
         'theme' : "original",
+        'players' : [],
       };
 
       info['name'] = event.snapshot.value["name"];
@@ -185,12 +232,27 @@ class GameDatabase {
         'cPlayers' : 0,
         'theme' : "original",
         'players' : [],
+        'daytime': false,
       };
 
       info['status'] = event.snapshot.value["status"];
       info['cPlayers'] = event.snapshot.value['cPlayers'];
       info['theme'] = event.snapshot.value['theme'];
       info['players'] = event.snapshot.value['players'];
+      info['daytime'] = event.snapshot.value['daytime'];
+
+      onData(info);
+    });
+
+    return subscription;
+  }
+
+  static Future<StreamSubscription<Event>> getAllPlayersNamesStream(String uid, void onData(List<String> map)) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    StreamSubscription<Event> subscription = ref.child("parties").child(uid).child("players").onValue.listen((Event event) {
+      var info = new List<String>();
+
+      event.snapshot.value.forEach((key, playerData) => info.add(key));
 
       onData(info);
     });
@@ -210,6 +272,11 @@ class GameDatabase {
     });
 
     return data;
+  }
+
+  static Future<void> setPartyAttribute(String partyUID, String attribute, dynamic value) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(partyUID).child(attribute).set(value);
   }
 
   static Future<List<String>> getAllPlayers(String partyUID) async {

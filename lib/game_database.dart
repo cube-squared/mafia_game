@@ -232,12 +232,14 @@ class GameDatabase {
         'cPlayers' : 0,
         'theme' : "original",
         'players' : [],
+        'daytime': false,
       };
 
       info['status'] = event.snapshot.value["status"];
       info['cPlayers'] = event.snapshot.value['cPlayers'];
       info['theme'] = event.snapshot.value['theme'];
       info['players'] = event.snapshot.value['players'];
+      info['daytime'] = event.snapshot.value['daytime'];
 
       onData(info);
     });

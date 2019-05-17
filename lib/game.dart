@@ -404,12 +404,11 @@ class Game {
     }
   }
 
-  static void runGame() {
+  static void runGame() async {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       Player.allThePlayers[i].displayDetails();
     }
-
-    Mafia.killPlayer(Player.allThePlayers[1]);
+    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[1].uid, "murder"));
     endGame();
 
   }

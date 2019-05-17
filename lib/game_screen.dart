@@ -51,7 +51,7 @@ class _GameScreenState extends State<GameScreen> {
         children: <Widget>[
           DayNightHeading(day: true, dayNum: 10,),
           Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          PlayerSelector(players: allPlayers, uid: widget.uid),
+          PlayerSelector(uid: widget.uid),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -194,16 +194,15 @@ class Narration extends StatelessWidget {
 }
 
 class PlayerSelector extends StatefulWidget {
-  PlayerSelector({Key key, this.players, this.uid}) : super(key: key);
+  PlayerSelector({Key key, this.uid}) : super(key: key);
 
-  final List<String> players;
   final String uid;
 
   @override
   _PlayerSelectorState createState() => _PlayerSelectorState();
 }
 
-List<String> allPlayers;
+List<Map<String, String>> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
   int numberSelected = 2;
@@ -218,7 +217,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     super.initState();
   }
 
-  void _updateInfo(List<String> list) {
+  void _updateInfo(List<Map<String, String>> list) {
     setState(() {
       allPlayers = list;
       print(allPlayers);
@@ -236,8 +235,8 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         selectedPlayers.remove(selectedPlayers[0]);
       }
       selectedPlayers.add(name);
-      GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
     });
+    GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
   }
 
 
@@ -275,10 +274,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
-    allPlayers.forEach((String name) {
+    allPlayers.forEach((Map<String, String> player) {
       Color bkgColor = Theme.of(context).cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
-      if (selectedPlayers.contains(name)) {
+      if (selectedPlayers.contains(player["uid"])) {
         if (globals.darkMode)
           bkgColor = Colors.red.withOpacity(.5);
         else
@@ -289,8 +288,8 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         color: bkgColor,
         child: ListTile(
           leading: icon,
-          title: Text(name),
-          onTap: () {addToSelection(name);},
+          title: Text(player["name"]),
+          onTap: () {addToSelection(player["uid"]);},
         ),
       ));
     });

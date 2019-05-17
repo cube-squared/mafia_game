@@ -247,12 +247,12 @@ class GameDatabase {
     return subscription;
   }
 
-  static Future<StreamSubscription<Event>> getAllPlayersNamesStream(String uid, void onData(List<String> map)) async {
+  static Future<StreamSubscription<Event>> getAllPlayersNamesStream(String uid, void onData(List<Map<String, String>> map)) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).child("players").onValue.listen((Event event) {
-      var info = new List<String>();
+      var info = new List<Map<String, String>>();
 
-      event.snapshot.value.forEach((key, playerData) => info.add(playerData["name"]));
+      event.snapshot.value.forEach((key, playerData) => info.add(<String, String> {'name' : playerData["name"], 'uid' : key}));
 
       onData(info);
     });
@@ -285,18 +285,6 @@ class GameDatabase {
       List<String> players = new List<String>();
       snap.value.keys.forEach((player) {
         players.add(player);
-      });
-      return players;
-    });
-    return data;
-  }
-
-  static Future<List<String>> getAllPlayersNames(String partyUID) async {
-    DatabaseReference ref = FirebaseDatabase.instance.reference();
-    List<String> data = await ref.child('parties').child(partyUID).child("players").once().then((DataSnapshot snap) {
-      List<String> players = new List<String>();
-      snap.value.forEach((key, values) {
-        players.add(values["name"]);
       });
       return players;
     });

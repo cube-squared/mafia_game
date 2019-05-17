@@ -274,6 +274,11 @@ class GameDatabase {
     return data;
   }
 
+  static Future<void> setPartyAttribute(String partyUID, String attribute, dynamic value) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(partyUID).child(attribute).set(value);
+  }
+
   static Future<List<String>> getAllPlayers(String partyUID) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     List<String> data = await ref.child('parties').child(partyUID).child("players").once().then((DataSnapshot snap) {

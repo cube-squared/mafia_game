@@ -40,9 +40,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //List<String> allPlayers;
-   // GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayers = a);
-
     return Scaffold (
       appBar: AppBar(
         title: Text("In Game - Day Phase"),
@@ -139,8 +136,6 @@ class _DayNightHeadingState extends State<DayNightHeading> {
   }
 }
 
-
-
 class WaitingForPlayers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -224,7 +219,6 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     });
   }
 
-
   void addToSelection(String name) {
     setState(() {
       if (selectedPlayers.contains(name)) {
@@ -238,7 +232,6 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     });
     GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -258,10 +251,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         votingPrompt = "Select a player to save:";
       }
       else if(role == "mafia"){
-        //numberSelected = (Game.numOfMafia / sqrt(Player.allThePlayers.length)).round();
+        //numberSelected = (Game.numOfMafia / sqrt(allPlayers.length)).round();
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
         if(numberSelected > 1){
-          votingPrompt = "Select " + numberSelected.toString() + "players to kill:";
+          votingPrompt = "Select " + numberSelected.toString() + " players to kill:";
         }
         else if(numberSelected == 1) {
           votingPrompt = "Select a player to kill:";

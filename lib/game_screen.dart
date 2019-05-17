@@ -200,7 +200,7 @@ class PlayerSelector extends StatefulWidget {
 List<Map<String, String>> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
-  int numberSelected = 2;
+  int numberSelected = 1;
   String votingPrompt = "hi";
   Icon iconSelected = Icon(MdiIcons.vote);
 
@@ -237,11 +237,13 @@ class _PlayerSelectorState extends State<PlayerSelector> {
   Widget build(BuildContext context) {
 
     //change this so its not hardcoded
-    bool day = false;
-
+    bool day = gamedata["daytime"];
+ //bool day = true;
     String role = gamedata["players"][globals.user.uid]["role"];
 
-    if (day) {
+    print(day);
+
+    if (day == true) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
       votingPrompt = "Select who you think is the Mafia:";
     }
@@ -267,20 +269,29 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
-    allPlayers.forEach((Map<String, String> player) {
-      Color bkgColor = Theme.of(context).cardColor;
+    allPlayers.forEach((Map<String, String> player){
+
+      if(player["role"] == "mafia"){
+        //display photoURL small and to the right for their selected player
+        String photo = player["photoURL"];
+      }
+
+      Color bkgColor = Theme
+          .of(context)
+          .cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(player["uid"])) {
         if (globals.darkMode)
           bkgColor = Colors.red.withOpacity(.5);
-        else if(role == "doctor"){
+        else if (role == "doctor" && day == false) {
           bkgColor = Colors.green[100];
           icon = iconSelected;
         }
-        else{
+        else {
           bkgColor = Colors.red[100];
-        icon = iconSelected;
-      }}
+          icon = iconSelected;
+        }
+      }
       widgets.add(Card(
         color: bkgColor,
         child: ListTile(

@@ -40,9 +40,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> allPlayers;
-    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayers = a);
-
     return Scaffold (
       appBar: AppBar(
         title: Text("In Game - Day Phase"),
@@ -51,7 +48,7 @@ class _GameScreenState extends State<GameScreen> {
         children: <Widget>[
           DayNightHeading(day: true, dayNum: 10,),
           Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          //PlayerSelector(players: allPlayers, uid: widget.uid),
+          PlayerSelector(uid: widget.uid),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -139,8 +136,6 @@ class _DayNightHeadingState extends State<DayNightHeading> {
   }
 }
 
-
-
 class WaitingForPlayers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -194,19 +189,18 @@ class Narration extends StatelessWidget {
 }
 
 class PlayerSelector extends StatefulWidget {
-  PlayerSelector({Key key, this.players, this.uid}) : super(key: key);
+  PlayerSelector({Key key, this.uid}) : super(key: key);
 
-  final List<String> players;
   final String uid;
 
   @override
   _PlayerSelectorState createState() => _PlayerSelectorState();
 }
 
-List<String> allPlayers;
+List<Map<String, String>> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
-  int numberSelected = 1;
+  int numberSelected = 2;
   String votingPrompt = "hi";
   Icon iconSelected = Icon(MdiIcons.vote);
 
@@ -218,9 +212,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     super.initState();
   }
 
-  void _updateInfo(List<String> list) {
+  void _updateInfo(List<Map<String, String>> list) {
     setState(() {
       allPlayers = list;
+      print(allPlayers);
     });
   }
 
@@ -235,37 +230,31 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       }
       selectedPlayers.add(name);
     });
+    GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
   }
 
   @override
   Widget build(BuildContext context) {
-    List<String> allPlayersNames;
-    //this is returning null
-    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
 
     //change this so its not hardcoded
     bool day = false;
-    //game doesn't like it
-    String role = gamedata["players"][globals.user.uid]["role"];
-    //GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
 
-    if (day == true) {
+    String role = gamedata["players"][globals.user.uid]["role"];
+
+    if (day) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
-      numberSelected = 1;
       votingPrompt = "Select who you think is the Mafia:";
     }
    else if (day == false) {
       if (role == "doctor") {
         iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
-        numberSelected = 1;
         votingPrompt = "Select a player to save:";
       }
-      else{
-        //numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
-        numberSelected = 3;
+      else if(role == "mafia"){
+        //numberSelected = (Game.numOfMafia / sqrt(allPlayers.length)).round();
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
         if(numberSelected > 1){
-          votingPrompt = "Select " + numberSelected.toString() + "players to kill:";
+          votingPrompt = "Select " + numberSelected.toString() + " players to kill:";
         }
         else if(numberSelected == 1) {
           votingPrompt = "Select a player to kill:";
@@ -278,22 +267,26 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
-    allPlayersNames.forEach((String name) {
+    allPlayers.forEach((Map<String, String> player) {
       Color bkgColor = Theme.of(context).cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
-      if (selectedPlayers.contains(name)) {
+      if (selectedPlayers.contains(player["uid"])) {
         if (globals.darkMode)
           bkgColor = Colors.red.withOpacity(.5);
-        else
+        else if(role == "doctor"){
+          bkgColor = Colors.green[100];
+          icon = iconSelected;
+        }
+        else{
           bkgColor = Colors.red[100];
         icon = iconSelected;
-      }
+      }}
       widgets.add(Card(
         color: bkgColor,
         child: ListTile(
           leading: icon,
-          title: Text(name),
-          onTap: () {addToSelection(name);},
+          title: Text(player["name"]),
+          onTap: () {addToSelection(player["uid"]);},
         ),
       ));
     });

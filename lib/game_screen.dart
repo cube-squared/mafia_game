@@ -225,14 +225,14 @@ class _PlayerSelectorState extends State<PlayerSelector> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> allPlayersNames = ['liz', 'scott', 'crockett', 'talon'];
+    List<String> allPlayersNames;
     //this is returning null
-    //GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
+    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
 
     //change this so its not hardcoded
     bool day = false;
     //game doesn't like it
-    String role = "mafia";
+    String role = gamedata["players"][globals.user.uid]["role"];
     //GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
 
     if (day == true) {
@@ -240,14 +240,15 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       numberSelected = 1;
       votingPrompt = "Select who you think is the Mafia:";
     }
-    else if (day == false) {
+   else if (day == false) {
       if (role == "doctor") {
         iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
         numberSelected = 1;
         votingPrompt = "Select a player to save:";
       }
       else{
-        numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
+        //numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
+        numberSelected = 3;
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
         if(numberSelected > 1){
           votingPrompt = "Select " + numberSelected.toString() + "players to kill:";

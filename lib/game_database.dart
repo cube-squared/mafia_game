@@ -274,6 +274,15 @@ class GameDatabase {
     return data;
   }
 
+  static Future<dynamic> getRoleDescription(String role) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    dynamic data = await ref.child('roles').once().then((DataSnapshot snap) {
+      return snap.value[role];
+    });
+
+    return data;
+  }
+
   static Future<void> setPartyAttribute(String partyUID, String attribute, dynamic value) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(partyUID).child(attribute).set(value);

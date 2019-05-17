@@ -400,7 +400,7 @@ class Game {
 
   static void setUp(String partyUid, List<String> playerIdList) async{
     Game.partyId = partyUid;
-    GameDatabase.setPartyAttribute(Game.partyId, 'status', 'starting');
+    //GameDatabase.setPartyAttribute(Game.partyId, 'status', 'starting');
     assignRoles(playerIdList);
     String name;
     for(int i = 0; i < Player.allThePlayers.length; i++){
@@ -416,7 +416,7 @@ class Game {
       Player.allThePlayers[i].displayDetails();
     }
     print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[1].uid, "murder"));
-    endGame();
+    //endGame();
 
   }
 

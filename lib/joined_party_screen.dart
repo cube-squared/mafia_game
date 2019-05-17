@@ -174,7 +174,7 @@ class _FABState extends State<FAB> {
         label: Text("Start Game"),
         backgroundColor: Colors.blue,
         onPressed: () {
-          //GameDatabase.getAllPlayers(widget.uid).then((players) => Game.runGame(widget.uid, players));
+          GameDatabase.getAllPlayers(widget.uid).then((players) => Game.runGame(widget.uid, players));
           GameDatabase.setPartyStatus(widget.uid, "ingame");
         },
       );

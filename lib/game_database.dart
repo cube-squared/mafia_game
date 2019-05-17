@@ -239,7 +239,7 @@ class GameDatabase {
       info['cPlayers'] = event.snapshot.value['cPlayers'];
       info['theme'] = event.snapshot.value['theme'];
       info['players'] = event.snapshot.value['players'];
-      info['daytime'] = event.snapshot.value['daytime'];
+      info['daytime'] = event.snapshot.value[false];
 
       onData(info);
     });

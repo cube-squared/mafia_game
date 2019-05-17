@@ -93,6 +93,10 @@ class _DayNightHeadingState extends State<DayNightHeading> {
   Widget build(BuildContext context) {
     String phase;
     Color phaseColor;
+    String role = gamedata['players'][globals.user.uid]['role'].toString().toLowerCase();
+
+    String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
     if (widget.day) {
       phase = "Day";
       phaseColor = Colors.orange;
@@ -107,24 +111,71 @@ class _DayNightHeadingState extends State<DayNightHeading> {
           child: Container (
             padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
             width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // User and Role
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text("$phase Phase", style: TextStyle(fontSize: 30, color: phaseColor)),
-                    Text("Day " + widget.dayNum.toString(), style: TextStyle(fontSize: 20)),
+                    // User avatar/name
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(globals.user.photoUrl),
+                          radius: 20,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(globals.user.displayName, style: TextStyle(fontSize: 20)),
+                        ),
+                      ],
+                    ),
+                    // Role text/icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        // Get role from Firebase
+                        Text(
+                            (role != '' ? capitalize(role) : 'Unassigned'),
+                            style: TextStyle(
+                                fontSize: 20,
+                                color:
+                                (
+                                    (role == 'doctor') ? Colors.blue :
+                                    (role == 'mafia') ? Colors.red :
+                                    null
+                                )
+                            )
+                        ),
+                        Icon(
+                            (
+                                (role == 'innocent') ? Icons.person :
+                                (role == 'doctor') ? MdiIcons.doctor :
+                                (role == 'mafia') ? MdiIcons.hatFedora :
+                                null
+                            ),
+                            color:
+                            (
+                                (role == 'doctor') ? Colors.blue :
+                                (role == 'mafia') ? Colors.red :
+                                null
+                            ),
+                            size: 30
+                        ),
+                      ],
+                    ),
                   ],
                 ),
+
+                // Role Description
                 Column(
                   children: <Widget>[
-                    Text("You are", style: TextStyle(fontSize: 12)),
-                    Row(
-                      children: <Widget>[
-                        Text(gamedata["players"][globals.user.uid]["role"], style: TextStyle(fontSize: 25, color: Colors.red)),
-                             //Icon(MdiIcons.hatFedora, color: Colors.red, size: 30),
-                      ],
+                    FutureBuilder<Object>(
+                        future: GameDatabase.getRoleDescription(role),
+                        builder: (context, snapshot) {
+                          return Text(snapshot.data.toString(), style: TextStyle(fontSize: 15));
+                        }
                     ),
                   ],
                 ),
@@ -135,6 +186,7 @@ class _DayNightHeadingState extends State<DayNightHeading> {
     );
   }
 }
+
 
 class WaitingForPlayers extends StatelessWidget {
   @override
@@ -215,7 +267,6 @@ class _PlayerSelectorState extends State<PlayerSelector> {
   void _updateInfo(List<Map<String, String>> list) {
     setState(() {
       allPlayers = list;
-      print(allPlayers);
     });
   }
 
@@ -238,10 +289,9 @@ class _PlayerSelectorState extends State<PlayerSelector> {
 
     //change this so its not hardcoded
     bool day = gamedata["daytime"];
- //bool day = true;
+    //bool day = true;
     String role = gamedata["players"][globals.user.uid]["role"];
 
-    print(day);
 
     if (day == true) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);

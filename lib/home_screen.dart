@@ -7,6 +7,7 @@ import 'globals.dart' as globals;
 import 'main.dart';
 import 'user_database.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'game_database.dart';
 
 
 class HomeScreenTabbed extends StatefulWidget {
@@ -18,10 +19,19 @@ class HomeScreenTabbed extends StatefulWidget {
 
 class _HomeScreenTabbedState extends State<HomeScreenTabbed> {
 
+  @override
+  void initState() {
+    if (globals.user != null)
+      UserDatabase.getSettings(globals.user.uid, context);
+    super.initState();
+  }
+
   // to logout
   void _logout() {
     globals.isLoggedIn = false;
     globals.user = null;
+    globals.darkMode = false;
+    globals.confirmOnPartyExit = true;
     AppBuilder.of(context).rebuild();
   }
 

@@ -5,6 +5,9 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'globals.dart' as globals;
 import 'user_database.dart';
 import 'home_screen.dart';
+import 'game.dart';
+import 'game_database.dart';
+import 'dart:async';
 
 
 class LoginScreen extends StatefulWidget {

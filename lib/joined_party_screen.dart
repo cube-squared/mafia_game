@@ -8,11 +8,13 @@ import 'globals.dart' as globals;
 import 'game_screen.dart';
 import 'chat_screen.dart';
 import 'ui_tools.dart';
+import 'game.dart';
 
 class JoinedPartyScreen extends StatefulWidget {
   JoinedPartyScreen({Key key, this.uid}) : super(key: key);
 
   final String uid;
+
 
   @override
   _JoinedPartyScreenState createState() => _JoinedPartyScreenState();
@@ -69,7 +71,17 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
           leading: new IconButton(
             icon: new Icon(Icons.arrow_back),
             onPressed: () => _checkLeave(),
-          ),
+             ),
+          actions: <Widget>[
+             new IconButton(
+           icon: Icon(Icons.backspace),
+            onPressed: () {
+            //GameDatabase.getAllPlayers(Game.partyId).then((List<String> players) => Game.setUp(players));
+            Game.runGame();
+              },
+            ),
+      ],
+
         ),
         bottomNavigationBar: BottomAppBar(
           child: Row(

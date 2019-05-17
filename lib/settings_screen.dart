@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'globals.dart' as globals;
+import 'user_database.dart';
 
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key key, this.uid}) : super(key: key);
@@ -21,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       globals.darkMode = false;
     }
     AppBuilder.of(context).rebuild();
+    UserDatabase.setSetting(globals.user.uid, "darkMode", value);
   }
 
   @override
@@ -28,6 +30,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold (
       body: ListView(
         children: <Widget>[
+          ListTile(
+            title: Text("All settings are synced with your account.")
+          ),
           ListTile(
             title: Text("Dark Mode"),
             subtitle: Text("For those who like their eyes"),
@@ -57,14 +62,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() {
                     globals.confirmOnPartyExit = value;
                   });
+                  UserDatabase.setSetting(globals.user.uid, "confirmOnPartyExit", value);
                 }
             ),
             onTap: () {
               setState(() {
-                if (globals.confirmOnPartyExit)
+                if (globals.confirmOnPartyExit) {
                   globals.confirmOnPartyExit = false;
-                else
+                  UserDatabase.setSetting(globals.user.uid, "confirmOnPartyExit", false);
+                } else {
                   globals.confirmOnPartyExit = true;
+                  UserDatabase.setSetting(globals.user.uid, "confirmOnPartyExit", true);
+                }
               });
             },
           ),

@@ -252,7 +252,7 @@ class GameDatabase {
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).child("players").onValue.listen((Event event) {
       var info = new List<String>();
 
-      event.snapshot.value.forEach((key, playerData) => info.add(key));
+      event.snapshot.value.forEach((key, playerData) => info.add(playerData["name"]));
 
       onData(info);
     });
@@ -273,6 +273,17 @@ class GameDatabase {
 
     return data;
   }
+
+
+  static Future<dynamic> getRoleDescription(String role) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    dynamic data = await ref.child('roles').once().then((DataSnapshot snap) {
+      return snap.value[role];
+    });
+
+    return data;
+  }
+
 
   static Future<void> setPartyAttribute(String partyUID, String attribute, dynamic value) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();

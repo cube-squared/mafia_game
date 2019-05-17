@@ -42,6 +42,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     List<String> allPlayers;
     GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayers = a);
+
     return Scaffold (
       appBar: AppBar(
         title: Text("In Game - Day Phase"),
@@ -95,6 +96,10 @@ class _DayNightHeadingState extends State<DayNightHeading> {
   Widget build(BuildContext context) {
     String phase;
     Color phaseColor;
+    String role = gamedata['players'][globals.user.uid]['role'].toString().toLowerCase();
+
+    String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
     if (widget.day) {
       phase = "Day";
       phaseColor = Colors.orange;
@@ -109,37 +114,76 @@ class _DayNightHeadingState extends State<DayNightHeading> {
           child: Container (
             padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
             width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: <Widget>[
+                // User and Role
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(globals.user.photoUrl),
-                      radius: 20,
+                    // User avatar/name
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(globals.user.photoUrl),
+                          radius: 20,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(globals.user.displayName, style: TextStyle(fontSize: 20)),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(globals.user.displayName, textScaleFactor: 1.5,),
+                    // Role text/icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        // Get role from Firebase
+                        Text(
+                            (role != '' ? capitalize(role) : 'Unassigned'),
+                            style: TextStyle(
+                                fontSize: 20,
+                                color:
+                                (
+                                    (role == 'doctor') ? Colors.blue :
+                                    (role == 'mafia') ? Colors.red :
+                                    null
+                                )
+                            )
+                        ),
+                        Icon(
+                            (
+                                (role == 'innocent') ? Icons.person :
+                                (role == 'doctor') ? MdiIcons.doctor :
+                                (role == 'mafia') ? MdiIcons.hatFedora :
+                                null
+                            ),
+                            color:
+                            (
+                                (role == 'doctor') ? Colors.blue :
+                                (role == 'mafia') ? Colors.red :
+                                null
+                            ),
+                            size: 30
+                        ),
+                      ],
                     ),
-
                   ],
                 ),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                // Role Description
+                Column(
                   children: <Widget>[
-                    // Get role from Firebase
-                    Text(gamedata['players'][globals.user.uid]['role'], style: TextStyle(fontSize: 25, color: Colors.blue)),
-
-                    Icon(
-                        MdiIcons.doctor,
-                        color: Colors.blue,
-                        size: 30),
+                    FutureBuilder<Object>(
+                      future: GameDatabase.getRoleDescription(role),
+                      builder: (context, snapshot) {
+                        print(snapshot.data.toString());
+                        print(role);
+                        return Text(snapshot.data.toString(), style: TextStyle(fontSize: 15));
+                      }
+                    ),
                   ],
-
                 ),
-
               ],
             ),
           )
@@ -193,6 +237,7 @@ class Narration extends StatelessWidget {
                     Text("Day 10", style: TextStyle(fontSize: 20)),
                   ],
                 ),
+                // Narration text
                 Text(text, style: TextStyle(fontSize: 15))
               ],
             ),
@@ -212,12 +257,26 @@ class PlayerSelector extends StatefulWidget {
   _PlayerSelectorState createState() => _PlayerSelectorState();
 }
 
+List<String> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
-  int numberSelected;
-  List<String> allPlayers;
-  String votingPrompt;
-  Icon iconSelected;
+  int numberSelected = 1;
+  String votingPrompt = "hi";
+  Icon iconSelected = Icon(MdiIcons.vote);
+
+  StreamSubscription playerSubscription;
+
+  @override
+  void initState() {
+    GameDatabase.getAllPlayersNamesStream(widget.uid, _updateInfo).then((StreamSubscription s) => playerSubscription = s);
+    super.initState();
+  }
+
+  void _updateInfo(List<String> list) {
+    setState(() {
+      allPlayers = list;
+    });
+  }
 
   void addToSelection(String name) {
     setState(() {
@@ -232,29 +291,32 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
+    List<String> allPlayersNames;
+    //this is returning null
+    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
 
-    String role;
-    GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
+    //change this so its not hardcoded
+    bool day = false;
+    //game doesn't like it
+    String role = gamedata["players"][globals.user.uid]["role"];
+    //GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
 
-    allPlayers = widget.players;
-    numberSelected = 0;
-
-    if (Game.sleepyTime == false) {
+    if (day == true) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
       numberSelected = 1;
       votingPrompt = "Select who you think is the Mafia:";
     }
-    else if (Game.sleepyTime) {
+   else if (day == false) {
       if (role == "doctor") {
         iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
         numberSelected = 1;
         votingPrompt = "Select a player to save:";
       }
-      else if (role == "mafia") {
-        numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
+      else{
+        //numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
+        numberSelected = 3;
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
         if(numberSelected > 1){
           votingPrompt = "Select " + numberSelected.toString() + "players to kill:";
@@ -270,7 +332,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
-    widget.players.forEach((String name) {
+    allPlayersNames.forEach((String name) {
       Color bkgColor = Theme.of(context).cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(name)) {

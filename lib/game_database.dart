@@ -165,6 +165,7 @@ class GameDatabase {
         'leaderUID' : "",
         'chat' : [],
         'theme' : "original",
+        'players' : [],
       };
 
       info['name'] = event.snapshot.value["name"];
@@ -236,6 +237,19 @@ class GameDatabase {
       info['cPlayers'] = event.snapshot.value['cPlayers'];
       info['theme'] = event.snapshot.value['theme'];
       info['players'] = event.snapshot.value['players'];
+
+      onData(info);
+    });
+
+    return subscription;
+  }
+
+  static Future<StreamSubscription<Event>> getAllPlayersNamesStream(String uid, void onData(List<String> map)) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    StreamSubscription<Event> subscription = ref.child("parties").child(uid).child("players").onValue.listen((Event event) {
+      var info = new List<String>();
+
+      event.snapshot.value.forEach((key, playerData) => info.add(key));
 
       onData(info);
     });

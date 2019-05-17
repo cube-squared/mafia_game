@@ -51,7 +51,7 @@ class _GameScreenState extends State<GameScreen> {
         children: <Widget>[
           DayNightHeading(day: true, dayNum: 10,),
           Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          PlayerSelector(players: allPlayers, uid: widget.uid),
+          //PlayerSelector(players: allPlayers, uid: widget.uid),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -203,12 +203,26 @@ class PlayerSelector extends StatefulWidget {
   _PlayerSelectorState createState() => _PlayerSelectorState();
 }
 
+List<String> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
   int numberSelected = 1;
   String votingPrompt = "hi";
   Icon iconSelected = Icon(MdiIcons.vote);
 
+  StreamSubscription playerSubscription;
+
+  @override
+  void initState() {
+    GameDatabase.getAllPlayersNamesStream(widget.uid, _updateInfo).then((StreamSubscription s) => playerSubscription = s);
+    super.initState();
+  }
+
+  void _updateInfo(List<String> list) {
+    setState(() {
+      allPlayers = list;
+    });
+  }
 
   void addToSelection(String name) {
     setState(() {

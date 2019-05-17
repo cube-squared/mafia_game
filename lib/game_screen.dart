@@ -273,10 +273,14 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       if (selectedPlayers.contains(player["uid"])) {
         if (globals.darkMode)
           bkgColor = Colors.red.withOpacity(.5);
-        else
+        else if(role == "doctor"){
+          bkgColor = Colors.green[100];
+          icon = iconSelected;
+        }
+        else{
           bkgColor = Colors.red[100];
         icon = iconSelected;
-      }
+      }}
       widgets.add(Card(
         color: bkgColor,
         child: ListTile(

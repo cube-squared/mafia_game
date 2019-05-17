@@ -252,7 +252,7 @@ class GameDatabase {
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).child("players").onValue.listen((Event event) {
       var info = new List<String>();
 
-      event.snapshot.value.forEach((key, playerData) => info.add(key));
+      event.snapshot.value.forEach((key, playerData) => info.add(playerData["name"]));
 
       onData(info);
     });

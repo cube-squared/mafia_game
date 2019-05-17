@@ -40,8 +40,8 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> allPlayers;
-    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayers = a);
+    //List<String> allPlayers;
+   // GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayers = a);
 
     return Scaffold (
       appBar: AppBar(
@@ -51,7 +51,7 @@ class _GameScreenState extends State<GameScreen> {
         children: <Widget>[
           DayNightHeading(day: true, dayNum: 10,),
           Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          //PlayerSelector(players: allPlayers, uid: widget.uid),
+          PlayerSelector(players: allPlayers, uid: widget.uid),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -221,8 +221,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
   void _updateInfo(List<String> list) {
     setState(() {
       allPlayers = list;
+      print(allPlayers);
     });
   }
+
 
   void addToSelection(String name) {
     setState(() {
@@ -237,11 +239,15 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
-    List<String> allPlayersNames;
+    /*List<String> allPlayersNames;
+    for(int i = 0; i < allPlayers.length; i++){
+    allPlayersNames.add(gamedata["players"][globals.user.uid]["name"]);
+    }*/
     //this is returning null
-    GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
+   // GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
 
     //change this so its not hardcoded
     bool day = false;
@@ -249,20 +255,17 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     String role = gamedata["players"][globals.user.uid]["role"];
     //GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
 
-    if (day == true) {
+    if (day) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
-      numberSelected = 1;
       votingPrompt = "Select who you think is the Mafia:";
     }
    else if (day == false) {
       if (role == "doctor") {
         iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
-        numberSelected = 1;
         votingPrompt = "Select a player to save:";
       }
-      else{
-        //numberSelected = (Player.mafiaMembers.length / sqrt(Player.allThePlayers.length)).round();
-        numberSelected = 3;
+      else if(role == "mafia"){
+        //numberSelected = (Game.numOfMafia / sqrt(Player.allThePlayers.length)).round();
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
         if(numberSelected > 1){
           votingPrompt = "Select " + numberSelected.toString() + "players to kill:";
@@ -278,7 +281,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
-    allPlayersNames.forEach((String name) {
+    allPlayers.forEach((String name) {
       Color bkgColor = Theme.of(context).cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(name)) {

@@ -35,6 +35,7 @@ class GameDatabase {
       'locked' : locked,
       'status' : 'open',
       'theme' : theme,
+      'daytime' : false,
     };
 
     DatabaseReference dbParty = ref.child("parties").push();

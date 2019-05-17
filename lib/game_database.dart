@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'game.dart';
+import 'dart:math';
 
 class GameDatabase {
 
@@ -77,6 +79,49 @@ class GameDatabase {
       setPartyStatus(uid, "deleted");
       await new Future.delayed(const Duration(seconds: 3), () => "3");
       deleteParty(uid);
+    }
+  }
+
+  static Future<String> getNarration(String partyUID, String playerUID, String event){
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    String theme = ref.child("parties").child(partyUID).child("theme").toString();
+    switch (event){
+      case "execution":{
+        return ref.child("themes").child(theme).child("execution").child("1").once().then((DataSnapshot snap) {
+          return snap.value.toString();
+          });
+        }
+      break;
+      case "intro":{
+        String role;
+        GameDatabase.getPlayerAttribute(partyUID, playerUID,"role").then((dynamic r) => role = r);
+        return ref.child("themes").child(theme).child("intro").child(role).once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+      }
+      break;
+      case "murder":{
+        var rng = new Random();
+        String val = (rng.nextInt(3)+1).toString();
+        return ref.child("themes").child(theme).child("murder").child(val).once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+      }
+      break;
+      case "win":{
+        String winner;
+        if(Game.teamWinner == 'Mafia'){
+          winner = 'mafia';
+        } else if (Game.teamWinner == 'Towns People'){
+          winner = 'innocent';
+        } else {
+          winner = 'YamessedupBUD!';
+        }
+        return ref.child("themes").child(theme).child("win").child(winner).once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+      }
+      break;
     }
   }
 

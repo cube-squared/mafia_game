@@ -206,7 +206,7 @@ class PlayerSelector extends StatefulWidget {
 List<String> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
-  int numberSelected = 1;
+  int numberSelected = 2;
   String votingPrompt = "hi";
   Icon iconSelected = Icon(MdiIcons.vote);
 
@@ -236,24 +236,18 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         selectedPlayers.remove(selectedPlayers[0]);
       }
       selectedPlayers.add(name);
+      GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
     });
   }
 
 
   @override
   Widget build(BuildContext context) {
-    /*List<String> allPlayersNames;
-    for(int i = 0; i < allPlayers.length; i++){
-    allPlayersNames.add(gamedata["players"][globals.user.uid]["name"]);
-    }*/
-    //this is returning null
-   // GameDatabase.getAllPlayersNames(widget.uid).then((List<String> a) => allPlayersNames = a);
 
     //change this so its not hardcoded
     bool day = false;
-    //game doesn't like it
+
     String role = gamedata["players"][globals.user.uid]["role"];
-    //GameDatabase.getPlayerAttribute(widget.uid, globals.user.uid, "role").then((dynamic r) => role = r);
 
     if (day) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);

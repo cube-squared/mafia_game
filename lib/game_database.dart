@@ -55,7 +55,7 @@ class GameDatabase {
       'team' : "",
       'alive' : true,
       'saved' : false,
-      'vote' : "",
+      'vote' : [],
     };
     ref.child("parties").child(uid).child("players").child(user.uid).set(player);
 

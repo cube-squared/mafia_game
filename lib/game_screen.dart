@@ -40,16 +40,28 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> widgets = [];
+
+    if (gamedata['status'] == "ingame") {
+      widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
+      widgets.add(Narration(text: "TEMP NARRATION TEXT"));
+
+
+      if (gamedata["daytime"] || gamedata['players'][globals.user.uid]["role"] != "innocent") {
+        widgets.add(PlayerSelector(uid: widget.uid));
+      } else {
+        widgets.add(WaitingNight());
+      }
+    } else if (gamedata['status'] == "loading") {
+      widgets.add(WaitingLoading(daytime: gamedata['daytime'],));
+    }
+
     return Scaffold (
       appBar: AppBar(
-        title: Text("In Game - Day Phase"),
+        title: Text("In Game - " + gamedata["name"]),
       ),
       body: ListView(
-        children: <Widget>[
-          DayNightHeading(day: true, dayNum: 10,),
-          Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          PlayerSelector(uid: widget.uid),
-        ],
+        children: widgets,
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
@@ -187,8 +199,7 @@ class _DayNightHeadingState extends State<DayNightHeading> {
   }
 }
 
-
-class WaitingForPlayers extends StatelessWidget {
+class WaitingNight extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -199,7 +210,44 @@ class WaitingForPlayers extends StatelessWidget {
             width: double.infinity,
             child: Column(
               children: <Widget>[
-                Text("Waiting for other players...", style: TextStyle(fontSize: 20, color: Colors.green)),
+                Text("You sleep soundly through the night.", style: TextStyle(fontSize: 20, color: Colors.green)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text("Waiting for other players...", style: TextStyle(fontSize: 15)),
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+
+class WaitingLoading extends StatelessWidget {
+  WaitingLoading({Key key, this.daytime}) : super(key: key);
+  bool daytime = false;
+
+  @override
+  Widget build(BuildContext context) {
+    String text = "";
+    if (daytime) {
+      text = "The day is coming to an end.";
+    } else {
+      text = "You begin to wake up.";
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text(text, style: TextStyle(fontSize: 35, color: Colors.blue)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text("Waiting for the host...", style: TextStyle(fontSize: 15)),
+                ),
               ],
             ),
           )

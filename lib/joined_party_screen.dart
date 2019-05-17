@@ -22,10 +22,24 @@ class JoinedPartyScreen extends StatefulWidget {
 
 class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
 
-  bool userReady = false;
-  String FABtext = "Not Ready";
-  Icon FABicon = Icon(MdiIcons.minusCircleOutline);
-  Color FABcolor = Colors.red;
+  StreamSubscription infoSubscription;
+
+  @override
+  void initState() {
+    GameDatabase.getPartyInfoStream(widget.uid, _updateInfo).then((StreamSubscription s) => infoSubscription = s);
+    super.initState();
+  }
+
+  void _updateInfo(Map<String, dynamic> map) {
+    setState(() {
+      info = map;
+      if (info['status'] == "ingame" || info['status'] == "loading")
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => GameScreen(uid: widget.uid)),
+        );
+    });
+  }
 
   Future<void> _checkLeave() {
     if (globals.confirmOnPartyExit) {
@@ -120,36 +134,79 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          icon: FABicon, //Icon(MdiIcons.playCircleOutline),
-          label: Text(FABtext), // Text("Start Game"),
-          backgroundColor: FABcolor,
-          onPressed: () {
-            if (!userReady) {
-              userReady = true;
-              GameDatabase.setPlayerStatus(widget.uid, globals.user, "ready");
-              setState(() {
-                FABcolor = Colors.green;
-                FABicon = Icon(MdiIcons.check);
-                FABtext = "Ready";
-              });
-            } else {
-              userReady = false;
-              GameDatabase.setPlayerStatus(widget.uid, globals.user, "notready");
-              setState(() {
-                FABcolor = Colors.red;
-                FABicon = Icon(MdiIcons.minusCircleOutline);
-                FABtext = "Not Ready";
-              });
-            }
-          },
-        ),
+        floatingActionButton: FAB(uid: widget.uid),
       ),
     );
 
   }
 
 }
+
+
+class FAB extends StatefulWidget {
+  FAB({Key key, this.uid}) : super(key: key);
+
+  final String uid;
+
+  @override
+  _FABState createState() => _FABState();
+}
+
+class _FABState extends State<FAB> {
+
+  bool userReady = false;
+  String FABtext = "Not Ready";
+  Icon FABicon = Icon(MdiIcons.minusCircleOutline);
+  Color FABcolor = Colors.red;
+
+  @override
+  Widget build(BuildContext context) {
+    // check if all players ready
+    bool allReady = true;
+    info['players'].forEach((uid, playerData) {
+      if (playerData['status'] != "ready")
+        allReady = false;
+    });
+
+    if (globals.user.uid == info['leaderUID'] && allReady) {
+      return FloatingActionButton.extended(
+        icon: Icon(MdiIcons.playCircleOutline),
+        label: Text("Start Game"),
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          //GameDatabase.getAllPlayers(widget.uid).then((players) => Game.runGame(widget.uid, players));
+          GameDatabase.setPartyStatus(widget.uid, "ingame");
+        },
+      );
+    }
+
+    return FloatingActionButton.extended(
+      icon: FABicon, //Icon(MdiIcons.playCircleOutline),
+      label: Text(FABtext), // Text("Start Game"),
+      backgroundColor: FABcolor,
+      onPressed: () {
+        if (!userReady) {
+          userReady = true;
+          GameDatabase.setPlayerStatus(widget.uid, globals.user, "ready");
+          setState(() {
+            FABcolor = Colors.green;
+            FABicon = Icon(MdiIcons.check);
+            FABtext = "Ready";
+          });
+        } else {
+          userReady = false;
+          GameDatabase.setPlayerStatus(widget.uid, globals.user, "notready");
+          setState(() {
+            FABcolor = Colors.red;
+            FABicon = Icon(MdiIcons.minusCircleOutline);
+            FABtext = "Not Ready";
+          });
+        }
+      },
+    );
+  }
+}
+
 
 
 class PartyDetails extends StatefulWidget {
@@ -167,22 +224,7 @@ Map<String, dynamic> info;
 class _PartyDetailsState extends State<PartyDetails> {
 
   Size deviceSize;
-  StreamSubscription infoSubscription;
   Widget startButton;
-
-  @override
-  void initState() {
-    GameDatabase.getPartyInfoStream(widget.uid, _updateInfo).then((StreamSubscription s) => infoSubscription = s);
-
-
-    super.initState();
-  }
-
-  void _updateInfo(Map<String, dynamic> map) {
-    setState(() {
-      info = map;
-    });
-  }
 
   String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 

@@ -36,6 +36,7 @@ class GameDatabase {
       'status' : 'open',
       'theme' : theme,
       'daytime' : false,
+      'day' : 0,
     };
 
     DatabaseReference dbParty = ref.child("parties").push();
@@ -167,6 +168,7 @@ class GameDatabase {
         'chat' : [],
         'theme' : "original",
         'players' : [],
+        'status' : 'open',
       };
 
       info['name'] = event.snapshot.value["name"];
@@ -177,6 +179,8 @@ class GameDatabase {
       info['cPlayers'] = event.snapshot.value['players'].length;
       info['chat'] = event.snapshot.value['chat'];
       info['theme'] = event.snapshot.value['theme'];
+      info['players'] = event.snapshot.value['players'];
+      info['status'] = event.snapshot.value['status'];
 
       onData(info);
     });
@@ -229,17 +233,21 @@ class GameDatabase {
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).onValue.listen((Event event) {
       var info = <String, dynamic> {
         'status' : 'open',
+        'name' : 'Party',
         'cPlayers' : 0,
         'theme' : "original",
         'players' : [],
         'daytime': false,
+        'day': 0,
       };
 
       info['status'] = event.snapshot.value["status"];
+      info['name'] = event.snapshot.value['name'];
       info['cPlayers'] = event.snapshot.value['cPlayers'];
       info['theme'] = event.snapshot.value['theme'];
       info['players'] = event.snapshot.value['players'];
       info['daytime'] = event.snapshot.value['daytime'];
+      info['day'] = event.snapshot.value['day'];
 
       onData(info);
     });

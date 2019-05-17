@@ -221,6 +221,7 @@ class Game {
 
 
   static void dayPhase() {
+    GameDatabase.setPartyAttribute(Game.partyId, 'daytime', true);
     makePlayersDead();
     stdout.writeln("Wakey wakey!");  //change to narration
     //Who died?
@@ -263,6 +264,7 @@ class Game {
 
 
   static void nightPhase() {
+    GameDatabase.setPartyAttribute(Game.partyId, 'daytime', false);
     sleepyTime = true;
     stdout.writeln("night night");
 //Doctor Bit                                                                    // Change once voting card is done
@@ -328,6 +330,7 @@ class Game {
     Player chosen;
     List<Player> highestVoted = [];
     List<Player> votes = [];
+    GameDatabase.setPartyAttribute(Game.partyId, 'status', 'loading');
 
     if (tieCount == 3) {
       stdout.writeln("Ya'll a bunch a dummies, now nobody dies dummies.");
@@ -395,7 +398,9 @@ class Game {
 
   //RUNS FIRST, creates allThePlayers list
 
-  static void setUp(List<String> playerIdList) async{
+  static void setUp(String partyUid, List<String> playerIdList) async{
+    Game.partyId = partyUid;
+    GameDatabase.setPartyAttribute(Game.partyId, 'status', 'starting');
     assignRoles(playerIdList);
     String name;
     for(int i = 0; i < Player.allThePlayers.length; i++){
@@ -404,7 +409,9 @@ class Game {
     }
   }
 
-  static void runGame() async {
+  static void runGame(String partyUid, List<String> playerIdList) async {
+    await setUp(partyUid, playerIdList);
+
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       Player.allThePlayers[i].displayDetails();
     }
@@ -414,6 +421,7 @@ class Game {
   }
 
   static void endGame() {
+    GameDatabase.setPartyAttribute(Game.partyId, 'status', 'open');
     Player.allThePlayers.clear();
   }
 }
@@ -549,7 +557,7 @@ main() async {                                                                  
   */
 
 
-  Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
+ // Game.setUp(await GameDatabase.getAllPlayers(Game.partyId));
 
 
   //Game.setup

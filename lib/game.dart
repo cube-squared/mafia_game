@@ -170,11 +170,13 @@ class Game {
 
     for (int i = 0; i < numOfPlayers; i++) {
       if (mafiaAssigned < numOfMafia) {
+
         print("${playerIdList[i]} is now mafia. \n");
         new Mafia(playerIdList[i]);
         mafiaAssigned++;
         if ( await GameDatabase.getPlayerAttribute(Game.partyId, playerIdList[i], "leader") == true) {
           leaderUid = playerIdList[i];
+
         }
       } else if (doctorsAssigned < numOfDoctors) {
         print("${playerIdList[i]} is now a doctor. \n");
@@ -273,16 +275,20 @@ class Game {
       stdout.writeln("Doctor ${i + 1} choose who to save.");
       String savedDude = stdin.readLineSync();
       Doctor.savePlayer(makeStringIntoPerson(savedDude));
-    }*/
-    List<Player> b = await getVotes("doctor");
-    Doctor.savePlayer(b[0]);
 
 
 //Mafia Bit
     isMafiaVoting = true;
     stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
     Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
+    }*/
+    List<Player> b = await getVotes("doctor"); //gets list of who the doctor voted for
+    Doctor.savePlayer(b[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
+
+
+
   }
+
 
   static Player makeUidIntoPerson(String theUid) {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
@@ -298,12 +304,11 @@ class Game {
 
 
 
-  // BASICALLY IS UNNECESSARY, REMAKE ONCE VOTING CARD ON UI IS DONE
-  static Future<List<Player>> getVotes(String whosVoting) async {
+  static Future<List<Player>> getVotes(String whoIsVoting) async {
     List<Player> votes = []; //what is being returned
     List<String> voteIds = []; // to store things from database
 
-    switch(whosVoting){
+    switch(whoIsVoting){
       case "Doctor": {
         voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
         for(int i = 0; i < voteIds.length; i++){
@@ -338,7 +343,7 @@ class Game {
 
 
     /*
-  }
+  } OLD CODE FOR CMDLINE VERSION
     List<Player> votes = [];
 
     for (int i = 0; i < votingPlayers.length; i++) {
@@ -460,6 +465,11 @@ class Game {
 
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       Player.allThePlayers[i].displayDetails();
+    }
+
+
+    while(await GameDatabase.getStatus(Game.partyId) != "loading"){
+      nightPhase();
     }
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Narration: \n\n");
     print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "intro"));

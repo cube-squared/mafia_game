@@ -125,6 +125,7 @@ class GameDatabase {
       }
       break;
     }
+    return "Yello";
   }
 
   static Future<int> getPartyNumPlayers(String uid) async {

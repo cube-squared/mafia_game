@@ -103,7 +103,7 @@ class GameDatabase {
         }
       break;
       case "intro":{
-        String role = "Doctor";
+        String role = await getPlayerAttribute(partyUID, playerUID, "role");
         return ref.child("themes").child(theme).child("intro").child(role).once().then((DataSnapshot snap) {
           return snap.value.toString();
         });

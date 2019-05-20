@@ -84,7 +84,7 @@ class GameDatabase {
     }
   }
 
-  static Future<String> getNarration(String partyUID, String playerUID, String event){
+  static Future<String> getNarration(String partyUID, String playerUID, String event) async{
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     String theme = ref.child("parties").child(partyUID).child("theme").toString();
     switch (event){
@@ -96,7 +96,7 @@ class GameDatabase {
       break;
       case "intro":{
         String role;
-        GameDatabase.getPlayerAttribute(partyUID, playerUID,"role").then((dynamic r) => role = r);
+        GameDatabase.getPlayerAttribute(partyUID, playerUID,"role").then((dynamic f) => role = f);
         return ref.child("themes").child(theme).child("intro").child(role).once().then((DataSnapshot snap) {
           return snap.value.toString();
         });

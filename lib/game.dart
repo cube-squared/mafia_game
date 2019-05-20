@@ -472,7 +472,7 @@ class Game {
       nightPhase();
     }
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Narration: \n\n");
-    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "intro"));
+    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers.first.uid, "murder"));
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     //endGame();
 

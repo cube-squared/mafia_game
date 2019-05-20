@@ -274,8 +274,8 @@ class Game {
       String savedDude = stdin.readLineSync();
       Doctor.savePlayer(makeStringIntoPerson(savedDude));
     }*/
-
-    List<String> savedDude = await GameDatabase.getPlayerAttribute(Game.partyId, doctorUid, "vote");
+    List<Player> b = await getVotes("doctor");
+    Doctor.savePlayer(b[0]);
 
 
 //Mafia Bit
@@ -313,15 +313,19 @@ class Game {
       }
       break;
       case "Mafia": {
-        
-        voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
+        for(int i = 0; i < Player.mafiaMembers.length; i++){
+          voteIds = []..addAll(await GameDatabase.getPlayerVote(Game.partyId, Player.mafiaMembers[i].uid));
+        }
         for(int i = 0; i < voteIds.length; i++){
           votes.add(makeUidIntoPerson(voteIds[i]));
         }
         return votes;
       }
+      break;
       case "Innocent": {
-        voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
+        for(int i = 0; i < Player.allThePlayers.length; i++){
+          voteIds = []..addAll(await GameDatabase.getPlayerVote(Game.partyId, Player.allThePlayers[i].uid));
+        }
         for(int i = 0; i < voteIds.length; i++){
           votes.add(makeUidIntoPerson(voteIds[i]));
         }
@@ -380,7 +384,7 @@ class Game {
       return null;
     }
 
-    votes = getVotes(votingPlayers);
+    //votes = getVotes(votingPlayers);
 
     //sorts list of people who got voted
     votes.sort((a, b) => a.getName().compareTo(b.getName()));

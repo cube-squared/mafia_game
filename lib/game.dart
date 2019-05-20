@@ -110,6 +110,7 @@ class Game {
   static int tieCount = 0;
   static String partyId = "-Lew9d89Ycz74hh798Lo";
   static String leaderUid;
+  static String doctorUid;
 
 
   //Make this unBad - Pass a player, kill that player, change game info based on that.
@@ -263,16 +264,19 @@ class Game {
 
 
 
-  static void nightPhase() {
+  static void nightPhase() async {
     GameDatabase.setPartyAttribute(Game.partyId, 'daytime', false);
     sleepyTime = true;
     stdout.writeln("night night");
 //Doctor Bit                                                                    // Change once voting card is done
-    for (int i = 0; i < numOfDoctors; i++) {
+    /*for (int i = 0; i < numOfDoctors; i++) {
       stdout.writeln("Doctor ${i + 1} choose who to save.");
       String savedDude = stdin.readLineSync();
       Doctor.savePlayer(makeStringIntoPerson(savedDude));
-    }
+    }*/
+
+    List<String> savedDude = await GameDatabase.getPlayerAttribute(Game.partyId, doctorUid, "vote");
+
 
 //Mafia Bit
     isMafiaVoting = true;
@@ -280,10 +284,10 @@ class Game {
     Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
   }
 
-  static Player makeStringIntoPerson(String theString) {
+  static Player makeUidIntoPerson(String theUid) {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
-      if (Player.allThePlayers[i].getName().toLowerCase() ==
-          theString.toLowerCase()) {
+      if (Player.allThePlayers[i].uid.toLowerCase() ==
+          theUid.toLowerCase()) {
         return Player.allThePlayers[i];
       }
     }
@@ -295,7 +299,42 @@ class Game {
 
 
   // BASICALLY IS UNNECESSARY, REMAKE ONCE VOTING CARD ON UI IS DONE
-  static List<Player> getVotes(List<Player> votingPlayers) {
+  static Future<List<Player>> getVotes(String whosVoting) async {
+    List<Player> votes = []; //what is being returned
+    List<String> voteIds = []; // to store things from database
+
+    switch(whosVoting){
+      case "Doctor": {
+        voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
+        for(int i = 0; i < voteIds.length; i++){
+          votes.add(makeUidIntoPerson(voteIds[i]));
+        }
+        return votes;
+      }
+      break;
+      case "Mafia": {
+        
+        voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
+        for(int i = 0; i < voteIds.length; i++){
+          votes.add(makeUidIntoPerson(voteIds[i]));
+        }
+        return votes;
+      }
+      case "Innocent": {
+        voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
+        for(int i = 0; i < voteIds.length; i++){
+          votes.add(makeUidIntoPerson(voteIds[i]));
+        }
+        return votes;
+      }
+      break;
+    }
+
+    return votes;
+
+
+    /*
+  }
     List<Player> votes = [];
 
     for (int i = 0; i < votingPlayers.length; i++) {
@@ -308,6 +347,9 @@ class Game {
       }
     }
     return votes;
+    */
+
+
   }
 
 
@@ -484,6 +526,7 @@ class Doctor extends Player {
     savedSelf = false;
 
     uid = id;
+    Game.doctorUid = id;
     GameDatabase.setPlayerAttribute(Game.partyId, uid, "team", "town");
     team = 'Town';
     GameDatabase.setPlayerAttribute(Game.partyId, uid, "role", "doctor");

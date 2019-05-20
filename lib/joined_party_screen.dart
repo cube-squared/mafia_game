@@ -86,15 +86,6 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
             icon: new Icon(Icons.arrow_back),
             onPressed: () => _checkLeave(),
              ),
-          actions: <Widget>[
-             new IconButton(
-           icon: Icon(Icons.backspace),
-            onPressed: () {
-            GameDatabase.getAllPlayers("-Lf5THpp0C8ToKx9rhfd").then((List<String> players) => Game.runGame('-Lf5THpp0C8ToKx9rhfd', players));
-              },
-            ),
-      ],
-
         ),
         bottomNavigationBar: BottomAppBar(
           child: Row(

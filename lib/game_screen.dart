@@ -56,38 +56,75 @@ class _GameScreenState extends State<GameScreen> {
       widgets.add(WaitingLoading(daytime: gamedata['daytime'],));
     }
 
-    return Scaffold (
-      appBar: AppBar(
-        title: Text("In Game - " + gamedata["name"]),
-      ),
-      body: ListView(
-        children: widgets,
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            IconButton(icon: Icon(Icons.help), onPressed: () {
-              UITools.showBasicPopup(context, "Game Information", "You are part of the Mafia. Every night, you will be able to select someone to kill with your fellow mafia members. If the medic doesn't choose to save that person, they will be killed. During the day, all the townspeople will vote on someone to hang for suspicion of being a mafia member, so it's your job to keep your job secret.");
-            }),
-            Row(
-              children: <Widget>[
-                Icon(MdiIcons.timer, color: Colors.green,),
-                Text("1:23", style: TextStyle(fontSize: 23, color: Colors.green),),
-              ],
-            ),
-            IconButton(icon: Icon(Icons.chat), onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ChatScreen(uid: widget.uid)),
-              );
-            }),
-          ],
+    return WillPopScope(
+      onWillPop: () => _checkLeave(),
+      child: Scaffold (
+        appBar: AppBar(
+          title: Text("In Game - " + gamedata["name"]),
+        ),
+        body: ListView(
+          children: widgets,
+        ),
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(icon: Icon(Icons.help), onPressed: () {
+                UITools.showBasicPopup(context, "Game Information", "You are part of the Mafia. Every night, you will be able to select someone to kill with your fellow mafia members. If the medic doesn't choose to save that person, they will be killed. During the day, all the townspeople will vote on someone to hang for suspicion of being a mafia member, so it's your job to keep your job secret.");
+              }),
+              Row(
+                children: <Widget>[
+                  Icon(MdiIcons.timer, color: Colors.green,),
+                  Text("1:23", style: TextStyle(fontSize: 23, color: Colors.green),),
+                ],
+              ),
+              IconButton(icon: Icon(Icons.chat), onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatScreen(uid: widget.uid)),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  Future<void> _checkLeave() {
+    if (globals.confirmOnPartyExit) {
+      return showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+          title: Text("Leaving Party"),
+          content: Text("Are you sure you want to leave this party?"),
+          actions: <Widget> [
+            FlatButton(
+                child: Text("Stay"),
+                onPressed: () {
+                  Navigator.pop(context); // close the dialog
+                }
+            ),
+            FlatButton(
+                child: Text("Leave"),
+                onPressed: () {
+                  Navigator.pop(context); // close the dialog
+                  Navigator.pop(context,true); // leave party UI
+                  GameDatabase.leaveParty(widget.uid, globals.user);
+                  globals.chatQuery = null; // reset internal party chat cache
+                }
+            ),
+          ],
+        ),
+      );
+    } else {
+      Navigator.pop(context,true); // leave party UI
+      GameDatabase.leaveParty(widget.uid, globals.user);
+      globals.chatQuery = null; // reset internal party chat cache
+    }
+  }
+
 }
 
 class DayNightHeading extends StatefulWidget {

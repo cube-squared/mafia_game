@@ -456,11 +456,11 @@ class Game {
   }
 
   static void runGame(String partyUid, List<String> playerIdList) async {
-    //await setUp(partyUid, playerIdList);
+    await setUp(partyUid, playerIdList);
 
-    //for (int i = 0; i < Player.allThePlayers.length; i++) {
-    //  Player.allThePlayers[i].displayDetails();
-    //}
+    for (int i = 0; i < Player.allThePlayers.length; i++) {
+      Player.allThePlayers[i].displayDetails();
+    }
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Narration: \n\n");
     print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "intro"));
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");

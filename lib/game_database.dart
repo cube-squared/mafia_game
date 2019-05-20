@@ -308,6 +308,18 @@ class GameDatabase {
     return data;
   }
 
+  static Future<List<String>> getPlayerVote(String partyUID, String playerUID) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    List<String> data = await ref.child('parties').child(partyUID).child("players").child(playerUID).child("vote").once().then((DataSnapshot snap) {
+      List<String> votes = new List<String>();
+      snap.value.forEach((uid) {
+        votes.add(uid);
+      });
+      return votes;
+    });
+    return data;
+  }
+
 }
 
 String _getDateNow() {

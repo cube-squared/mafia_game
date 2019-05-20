@@ -462,7 +462,7 @@ class Game {
       Player.allThePlayers[i].displayDetails();
     }
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Narration: \n\n");
-    print(GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "execution"));
+    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "execution"));
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     //endGame();
 

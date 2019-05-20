@@ -87,6 +87,7 @@ class GameDatabase {
   static Future<String> getNarration(String partyUID, String playerUID, String event) async{
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     String theme = ref.child("parties").child(partyUID).child("theme").toString();
+    print("theme; " + theme);
     switch (event){
       case "execution":{
         return ref.child("themes").child(theme).child("execution").child("1").once().then((DataSnapshot snap) {

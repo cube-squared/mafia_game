@@ -95,8 +95,7 @@ class GameDatabase {
         }
       break;
       case "intro":{
-        String role;
-        GameDatabase.getPlayerAttribute(partyUID, playerUID,"role").then((dynamic f) => role = f);
+        String role = "Doctor";
         return ref.child("themes").child(theme).child("intro").child(role).once().then((DataSnapshot snap) {
           return snap.value.toString();
         });

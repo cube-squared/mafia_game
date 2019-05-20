@@ -167,6 +167,7 @@ class _FABState extends State<FAB> {
         onPressed: () {
           GameDatabase.getAllPlayers(widget.uid).then((players) => Game.runGame(widget.uid, players));
           GameDatabase.setPartyStatus(widget.uid, "ingame");
+          GameDatabase.startCountdown(widget.uid, 25);
         },
       );
     }

@@ -37,6 +37,7 @@ class GameDatabase {
       'theme' : theme,
       'daytime' : false,
       'day' : 0,
+      'timer' : 0,
     };
 
     DatabaseReference dbParty = ref.child("parties").push();
@@ -247,6 +248,7 @@ class GameDatabase {
         'players' : [],
         'daytime': false,
         'day': 0,
+        'timer' : 1000,
       };
 
       info['status'] = event.snapshot.value["status"];
@@ -256,6 +258,7 @@ class GameDatabase {
       info['players'] = event.snapshot.value['players'];
       info['daytime'] = event.snapshot.value['daytime'];
       info['day'] = event.snapshot.value['day'];
+      info['timer'] = event.snapshot.value['timer'];
 
       onData(info);
     });
@@ -326,6 +329,23 @@ class GameDatabase {
       return votes;
     });
     return data;
+  }
+
+  static Future<bool> startCountdown(String partyUID, int lengthInSeconds) async {
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(partyUID).child("timer").set(lengthInSeconds);
+    int remaining = lengthInSeconds;
+
+    new Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      remaining--;
+      ref.child("parties").child(partyUID).child("timer").set(remaining);
+      if (remaining <= 0) {
+        t.cancel();
+        ref.child("parties").child(partyUID).child("status").set("loading");
+      }
+    });
+
+    return true;
   }
 
 }

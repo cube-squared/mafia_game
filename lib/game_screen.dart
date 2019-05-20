@@ -56,6 +56,14 @@ class _GameScreenState extends State<GameScreen> {
       widgets.add(WaitingLoading(daytime: gamedata['daytime'],));
     }
 
+    Color timerColor;
+    if (gamedata["timer"] > 20)
+      timerColor = Colors.green;
+    else if (gamedata["timer"] <= 10)
+      timerColor = Colors.red;
+    else
+      timerColor = Colors.orange;
+
     return WillPopScope(
       onWillPop: () => _checkLeave(),
       child: Scaffold (
@@ -75,8 +83,8 @@ class _GameScreenState extends State<GameScreen> {
               }),
               Row(
                 children: <Widget>[
-                  Icon(MdiIcons.timer, color: Colors.green,),
-                  Text("1:23", style: TextStyle(fontSize: 23, color: Colors.green),),
+                  Icon(MdiIcons.timer, color: timerColor,),
+                  Text(gamedata["timer"].toString(), style: TextStyle(fontSize: 23, color: timerColor),),
                 ],
               ),
               IconButton(icon: Icon(Icons.chat), onPressed: () {

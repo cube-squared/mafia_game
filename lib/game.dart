@@ -415,7 +415,9 @@ class Game {
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       Player.allThePlayers[i].displayDetails();
     }
-    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[1].uid, "murder"));
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Narration: \n\n");
+    print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "murder"));
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     //endGame();
 
   }

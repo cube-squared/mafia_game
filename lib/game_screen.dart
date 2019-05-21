@@ -328,7 +328,11 @@ class Narration extends StatelessWidget {
                     Text("Day " + day.toString(), style: TextStyle(fontSize: 20)),
                   ],
                 ),
-                Text(text, style: TextStyle(fontSize: 15))
+                Text(
+                  // Check if the string is null
+                    (text != null ? text : ''),
+                    style: TextStyle(fontSize: 15)
+                )
               ],
             ),
           )

@@ -205,9 +205,13 @@ class Game {
       }
     }
     if (counter == Player.allThePlayers.length) {
+      String name = "Jean Claude Van Damme";
+      GameDatabase.setNarration(Game.partyId, "win", name);
       winner = true;
       teamWinner = 'Mafia';
     } else if (counter == 0) {
+      String name = "Jean Claude Van Damme";
+      GameDatabase.setNarration(Game.partyId, "win", name);
       winner = true;
       teamWinner = 'Towns People';
     }
@@ -229,9 +233,12 @@ class Game {
     stdout.writeln("Wakey wakey!");  //change to narration
     //Who died?
     sleepyTime = false;
-    for (int i = 0; i < Player.deadDudes.length; i++) {
-      stdout.writeln("AWE MAN " + Player.deadDudes[i] + " died");
-    }
+
+    //DONT FUCK WITH ME I HAVE THE POWER OF GOD AND ANIME ON MY SIDE
+    String name = "Jean Claude Van Damme";
+    GameDatabase.setNarration(Game.partyId, "execution", name);
+    //EUGGGGGGGGGGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
     Player.deadDudes.clear();
     checkWin();
 //oh people talk Chat();
@@ -270,6 +277,8 @@ class Game {
     GameDatabase.setPartyAttribute(Game.partyId, 'daytime', false);
     sleepyTime = true;
     stdout.writeln("night night");
+    String name = "Jean Claude Van Damme";
+    GameDatabase.setNarration(Game.partyId, "murder", name);
 //Doctor Bit                                                                    // Change once voting card is done
     /*for (int i = 0; i < numOfDoctors; i++) {
       stdout.writeln("Doctor ${i + 1} choose who to save.");
@@ -296,7 +305,7 @@ class Game {
 
     Mafia.killPlayer(await calculateVote(Player.allThePlayers, Player.mafiaMembers, 'mafia'));
 
-
+  print(name+"\n"*100000);
 
   }
 
@@ -480,7 +489,7 @@ class Game {
     }
 
 
-    GameDatabase.setNarration(partyUid, "intro");
+    GameDatabase.setNarration(partyUid, "intro", "");
     GameDatabase.setPartyStatus(partyUid, "ingame");
 
 

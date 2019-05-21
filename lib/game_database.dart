@@ -273,6 +273,9 @@ class GameDatabase {
         'daytime': false,
         'day': 0,
         'timer' : 1000,
+        'mafiaNarration' : "",
+        'doctorNarration' : "",
+        'innocentNarration' : "",
       };
 
       info['status'] = event.snapshot.value["status"];
@@ -283,6 +286,9 @@ class GameDatabase {
       info['daytime'] = event.snapshot.value['daytime'];
       info['day'] = event.snapshot.value['day'];
       info['timer'] = event.snapshot.value['timer'];
+      info['mafiaNarration'] = event.snapshot.value['mafiaNarration'];
+      info['doctorNarration'] = event.snapshot.value['doctorNarration'];
+      info['innocentNarration'] = event.snapshot.value['innocentNarration'];
 
       onData(info);
     });

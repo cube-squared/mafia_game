@@ -492,6 +492,8 @@ class Game {
       nightPhase();
     }
     else {
+      GameDatabase.startCountdown(partyUid, 45);
+      nightPhase();
      // dayPhase();
     }
 

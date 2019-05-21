@@ -44,7 +44,8 @@ class _GameScreenState extends State<GameScreen> {
 
     if (gamedata['status'] == "ingame") {
       widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
-      widgets.add(Narration(text: "TEMP NARRATION TEXT"));
+      String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+      widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]);
 
 
       if (gamedata["daytime"] || gamedata['players'][globals.user.uid]["role"] != "innocent") {
@@ -302,9 +303,9 @@ class WaitingLoading extends StatelessWidget {
 }
 
 class Narration extends StatelessWidget {
-  Narration({Key key, this.role, this.text}) : super(key: key);
+  Narration({Key key, this.day, this.text}) : super(key: key);
 
-  final String role;
+  final int day;
   final String text;
 
   @override
@@ -321,7 +322,7 @@ class Narration extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Text("Day 10", style: TextStyle(fontSize: 20)),
+                    Text("Day " + day.toString(), style: TextStyle(fontSize: 20)),
                   ],
                 ),
                 Text(text, style: TextStyle(fontSize: 15))

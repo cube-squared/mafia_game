@@ -488,7 +488,7 @@ class Game {
 
   static void nextDay(String partyUid, bool currentState) {
     if(currentState){
-      
+      GameDatabase.startCountdown(partyUid, 45);
       nightPhase();
     }
     else {

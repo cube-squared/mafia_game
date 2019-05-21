@@ -396,7 +396,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     String role = gamedata["players"][globals.user.uid]["role"];
     print(allPlayers.length);
     allPlayers.forEach((Map<String, String> player) {
-      if(gamedata["players"][player["uid"]]["role"] == "mafia" && player["name"] != globals.user.displayName){
+      if(gamedata["players"][player["uid"]]["role"] == "mafia" && player["uid"] != globals.user.uid){
         mafias.add(player["name"]);
       }
 

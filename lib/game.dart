@@ -282,6 +282,8 @@ class Game {
     stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
     Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
     }*/
+
+
     // real doctor bit whos up
     List<Player> b = await getVotes("doctor"); //gets list of who the doctor voted for
     Doctor.savePlayer(b[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
@@ -470,8 +472,8 @@ class Game {
     }
 
 
-    GameDatabase.setNarration(Game.partyId, "intro");
-    GameDatabase.setPartyStatus(Game.partyId, "ingame");
+    GameDatabase.setNarration(partyUid, "intro");
+    GameDatabase.setPartyStatus(partyUid, "ingame");
 
 
 
@@ -481,6 +483,18 @@ class Game {
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     */
     //endGame();
+
+  }
+
+  static void nextDay(String partyUid, bool currentState) {
+    if(currentState){
+      GameDatabase.startCountdown(partyUid, 45);
+      nightPhase();
+    }
+    else {
+     // dayPhase();
+    }
+
 
   }
 

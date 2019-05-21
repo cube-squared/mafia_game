@@ -359,7 +359,7 @@ class GameDatabase {
   static Future<bool> startCountdown(String partyUID, int lengthInSeconds) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(partyUID).child("timer").set(lengthInSeconds);
-    bool daytime = await ref.child("parties").child("daytime").once().then((DataSnapshot snap) => return snap.value);
+    bool daytime = await ref.child("parties").child("daytime").once().then((DataSnapshot snap) {return snap.value.toString();}) as bool;
     int remaining = lengthInSeconds;
 
     new Timer.periodic(const Duration(seconds: 1), (Timer t) {

@@ -45,7 +45,7 @@ class _GameScreenState extends State<GameScreen> {
     if (gamedata['status'] == "ingame") {
       widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
       String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
-      widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]);
+      widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]));
 
 
       if (gamedata["daytime"] || gamedata['players'][globals.user.uid]["role"] != "innocent") {

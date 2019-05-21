@@ -285,8 +285,8 @@ class Game {
 
 
     // real doctor bit whos up
-    List<Player> b = await getVotes("doctor"); //gets list of who the doctor voted for
-    Doctor.savePlayer(b[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
+    List<Player> s = await getVotes("doctor"); //gets list of who the doctor voted for
+    Doctor.savePlayer(s[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
 
     // real mafia bit whos up lmao its the mafia rip in peace
     //so i need to get the player(s) that the mafia chooses to die first
@@ -428,6 +428,7 @@ class Game {
     }
     if (highestVoted.length == 1) {
       chosen = highestVoted[0];
+      return chosen;
     } else if (highestVoted.length > 1) {
       tieCount++;
       return (calculateVote(highestVoted, votingPlayers, whoIsVoting));
@@ -540,7 +541,8 @@ class Mafia extends Player {
   }
 
 //For mafia at night to kill people
-  static void killPlayer(Player player) async{
+  static void killPlayer(Player player) async {
+    /*
     if(player == null) {
     } else {
       if (await player.getSaved(player.uid)) {
@@ -548,6 +550,12 @@ class Mafia extends Player {
         player.setStatus(false, player.uid);
       }
     }
+   */
+
+    if (await player.getSaved(player.uid) == false){
+      player.setStatus(false, player.uid);
+    }
+
   }
 }
 

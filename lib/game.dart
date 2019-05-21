@@ -492,7 +492,7 @@ class Game {
     else {
       nightPhase();
       GameDatabase.setPartyStatus(partyUid, "ingame");
-      GameDatabase.startCountdown(partyUid, 45, false);
+      GameDatabase.startCountdown(partyUid, 25, false);
      // dayPhase();
     }
 
@@ -579,6 +579,10 @@ class Doctor extends Player {
         docName = Player.allThePlayers[i].getName();
       }
     }
+
+    player.setSaved(true, player.uid);
+
+    /*
     if (player == null) {
     } else {
       if (!savedSelf) {
@@ -597,6 +601,7 @@ class Doctor extends Player {
         }
       }
     }
+    */
   }
 }
 

@@ -493,11 +493,12 @@ class Game {
 
   }
 
-  static void nextDay(String partyUid, bool daytime) {
+  static void nextDay(String partyUid, bool daytime, int day) {
     if(daytime){
     }
     else {
       nightPhase();
+      GameDatabase.updateDay(day, partyUid);
       GameDatabase.setPartyStatus(partyUid, "ingame");
       GameDatabase.startCountdown(partyUid, 25, false);
      // dayPhase();

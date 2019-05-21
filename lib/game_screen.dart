@@ -10,6 +10,7 @@ import 'ui_tools.dart';
 import 'dart:async';
 import 'game.dart';
 import 'dart:math';
+import 'package:mafia_game/game_database.dart';
 
 
 class GameScreen extends StatefulWidget {
@@ -43,9 +44,11 @@ class _GameScreenState extends State<GameScreen> {
     List<Widget> widgets = [];
 
     if (gamedata['status'] == "ingame") {
-      widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
-      String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
-      widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]));
+
+        widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
+        String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+        widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]));
+
 
 
       if (gamedata["daytime"] || gamedata['players'][globals.user.uid]["role"] != "innocent") {
@@ -101,8 +104,8 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Future<void> _checkLeave() {
-    if (globals.confirmOnPartyExit) {
+  Future<void> _checkLeave() async {
+    if (globals.confirmOnPartyExit || globals.confirmOnPartyExit == null) {
       return showDialog(
         context: context,
         builder: (context) => new AlertDialog(

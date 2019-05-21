@@ -161,6 +161,11 @@ class GameDatabase {
     ref.child("parties").child(partyUID).child("innocentNarration").set(innocent);
   }
 
+  static void updateDay(int currentDay, String partyUID){
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    ref.child("parties").child(partyUID).child("day").set(currentDay+1);
+  }
+
   static Future<int> getPartyNumPlayers(String uid) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     int _numPlayers = await ref.child('parties').child(uid).once().then((DataSnapshot snap) {
@@ -366,14 +371,16 @@ class GameDatabase {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(partyUID).child("timer").set(lengthInSeconds);
     int remaining = lengthInSeconds;
-
+    int day = await ref.child("parties").child(partyUID).child("day").once().then((DataSnapshot snap) {
+      return snap.value;
+    });
     new Timer.periodic(const Duration(seconds: 1), (Timer t) {
       remaining--;
       ref.child("parties").child(partyUID).child("timer").set(remaining);
       if (remaining <= 0) {
         t.cancel();
         ref.child("parties").child(partyUID).child("status").set("loading");
-        Game.nextDay(partyUID, daytime);
+        Game.nextDay(partyUID, daytime, day);
       }
     });
 

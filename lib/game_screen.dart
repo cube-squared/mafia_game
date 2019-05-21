@@ -387,7 +387,31 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     //change this so its not hardcoded
     bool day = gamedata["daytime"];
     //bool day = true;
+    List<String> mafias = [];
+    String mafiaString = "";
     String role = gamedata["players"][globals.user.uid]["role"];
+    print(allPlayers.length);
+    allPlayers.forEach((Map<String, String> player) {
+      if(gamedata["players"][player["uid"]]["role"] == "mafia" && player["name"] != globals.user.displayName){
+        mafias.add(player["name"]);
+      }
+
+    });
+    var num1 = 0;
+    if(mafias.length == 0){
+      mafiaString = "none";
+    }
+    else {
+      mafias.forEach((String maf) {
+        if (num1 + 1 < mafias.length) {
+            mafiaString += maf + ", ";
+        }
+        else {
+          mafiaString += maf;
+        }
+        num1++;
+      });
+    }
 
 
     if (day == true) {
@@ -399,14 +423,15 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
         votingPrompt = "Select a player to save:";
       }
-      else if(role == "mafia"){
+      else if (role == "mafia") {
         //numberSelected = (Game.numOfMafia / sqrt(allPlayers.length)).round();
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
-        if(numberSelected > 1){
-          votingPrompt = "Select " + numberSelected.toString() + " players to kill:";
+        if (numberSelected > 1) {
+          votingPrompt =
+              "Select " + numberSelected.toString() + " players to kill:";
         }
-        else if(numberSelected == 1) {
-          votingPrompt = "Select a player to kill:";
+        else if (numberSelected == 1) {
+          votingPrompt = "Select a player to kill(Other mafia: " + mafiaString + "):";
         }
       }
     }

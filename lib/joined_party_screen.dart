@@ -93,10 +93,7 @@ class _JoinedPartyScreenState extends State<JoinedPartyScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(icon: Icon(Icons.menu), onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GameScreen(uid: widget.uid)),
-                );
+                // currently does nothing
               },),
               IconButton(icon: Icon(Icons.chat), onPressed: () {
                 Navigator.push(

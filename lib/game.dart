@@ -312,7 +312,7 @@ class Game {
     List<String> voteIds = []; // to store things from database
 
     switch(whoIsVoting){
-      case "Doctor": {
+      case "doctor": {
         voteIds = await GameDatabase.getPlayerVote(Game.partyId, Game.doctorUid);
         for(int i = 0; i < voteIds.length; i++){
           votes.add(makeUidIntoPerson(voteIds[i]));
@@ -320,7 +320,7 @@ class Game {
         return votes;
       }
       break;
-      case "Mafia": {
+      case "mafia": {
         for(int i = 0; i < Player.mafiaMembers.length; i++){
           voteIds = []..addAll(await GameDatabase.getPlayerVote(Game.partyId, Player.mafiaMembers[i].uid));
         }
@@ -330,7 +330,7 @@ class Game {
         return votes;
       }
       break;
-      case "Innocent": {
+      case "innocent": {
         for(int i = 0; i < Player.allThePlayers.length; i++){
           voteIds = []..addAll(await GameDatabase.getPlayerVote(Game.partyId, Player.allThePlayers[i].uid));
         }
@@ -580,9 +580,6 @@ class Doctor extends Player {
       }
     }
 
-    player.setSaved(true, player.uid);
-
-    /*
     if (player == null) {
     } else {
       if (!savedSelf) {
@@ -601,7 +598,7 @@ class Doctor extends Player {
         }
       }
     }
-    */
+
   }
 }
 

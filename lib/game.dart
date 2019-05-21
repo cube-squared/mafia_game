@@ -486,16 +486,13 @@ class Game {
 
   }
 
-  static void nextDay(String partyUid, bool currentState) {
-    if(currentState){
-      GameDatabase.setPartyStatus(partyUid, "ingame");
-      GameDatabase.startCountdown(partyUid, 45, false);
-      nightPhase();
+  static void nextDay(String partyUid, bool daytime) {
+    if(daytime){
     }
     else {
+      nightPhase();
       GameDatabase.setPartyStatus(partyUid, "ingame");
       GameDatabase.startCountdown(partyUid, 45, false);
-      nightPhase();
      // dayPhase();
     }
 

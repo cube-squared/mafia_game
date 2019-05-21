@@ -99,21 +99,32 @@ class GameDatabase {
     });
   }
 
-  static Future<String> getNarration(String partyUID, String playerUID, String event) async{
+  static Future<void> setNarration(String partyUID, String event) async{
+    String mafia;
+    String doctor;
+    String innocent;
+
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     String theme = await getTheme(partyUID);
     print("theme: " + theme);
     print ("event: " + event);
     switch (event){
       case "execution":{
-        return ref.child("themes").child(theme).child("execution").child("1").once().then((DataSnapshot snap) {
-          return snap.value.toString();
+         mafia = await ref.child("themes").child(theme).child("execution").child("1").once().then((DataSnapshot snap) {
+           return snap.value.toString();
           });
+         doctor = mafia;
+         innocent = mafia;
         }
       break;
       case "intro":{
-        String role = await getPlayerAttribute(partyUID, playerUID, "role");
-        return ref.child("themes").child(theme).child("intro").child(role).once().then((DataSnapshot snap) {
+        mafia = await ref.child("themes").child(theme).child("intro").child("mafia").once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+        doctor = await ref.child("themes").child(theme).child("intro").child("doctor").once().then((DataSnapshot snap) {
+          return snap.value.toString();
+        });
+        innocent = await ref.child("themes").child(theme).child("intro").child("innocent").once().then((DataSnapshot snap) {
           return snap.value.toString();
         });
       }
@@ -121,9 +132,11 @@ class GameDatabase {
       case "murder":{
         var rng = new Random();
         String val = (rng.nextInt(3)+1).toString();
-        return ref.child("themes").child(theme).child("murder").child(val).once().then((DataSnapshot snap) {
+        mafia = await ref.child("themes").child(theme).child("murder").child(val).once().then((DataSnapshot snap) {
           return snap.value.toString();
         });
+        doctor = mafia;
+        innocent = mafia;
       }
       break;
       case "win":{
@@ -135,13 +148,17 @@ class GameDatabase {
         } else {
           winner = 'YamessedupBUD!';
         }
-        return ref.child("themes").child(theme).child("win").child(winner).once().then((DataSnapshot snap) {
+        mafia = await ref.child("themes").child(theme).child("win").child(winner).once().then((DataSnapshot snap) {
           return snap.value.toString();
         });
+        doctor = mafia;
+        innocent = mafia;
       }
       break;
     }
-    return "Yello";
+    ref.child("parties").child(partyUID).child("mafiaNarration").set(mafia);
+    ref.child("parties").child(partyUID).child("doctorNarration").set(doctor);
+    ref.child("parties").child(partyUID).child("innocentNarration").set(innocent);
   }
 
   static Future<int> getPartyNumPlayers(String uid) async {

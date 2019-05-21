@@ -223,7 +223,7 @@ class Game {
 
 
 
-  static void dayPhase() {
+  static void dayPhase() async {
     GameDatabase.setPartyAttribute(Game.partyId, 'daytime', true);
     makePlayersDead();
     stdout.writeln("Wakey wakey!");  //change to narration
@@ -241,7 +241,7 @@ class Game {
     if (winner == false) {
       stdout.writeln("Whose ready for a town hanging?");
       Mafia.killPlayer(
-          calculateVote(Player.allThePlayers, Player.allThePlayers));
+          await calculateVote(Player.allThePlayers, Player.allThePlayers, "Innocent"));
       makePlayersDead();
       for (int i = 0; i < Player.deadDudes.length; i++) {
         stdout.writeln("AWE MAN " + Player.deadDudes[i] + " died");
@@ -282,6 +282,7 @@ class Game {
     stdout.writeln("Hows it goin dude or dudette mafia! Vote for who to kill!");
     Mafia.killPlayer(calculateVote(Player.allThePlayers, Player.mafiaMembers));
     }*/
+    // real doctor bit whos up
     List<Player> b = await getVotes("doctor"); //gets list of who the doctor voted for
     Doctor.savePlayer(b[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
 
@@ -374,14 +375,14 @@ class Game {
 
 //Sort idea -> sort and count, compare counts to find highest
 // While loop idea -> run through list over and over counting instances of each name, keep highest
-  static Player calculateVote(
-      List<Player> voteablePlayers, List<Player> votingPlayers) {
+  static Future<Player> calculateVote (
+      List<Player> voteablePlayers, List<Player> votingPlayers, String whoIsVoting)  async{
     int counter = 0;
     int higher = 0;
     Player chosen;
     List<Player> highestVoted = [];
     List<Player> votes = [];
-    GameDatabase.setPartyAttribute(Game.partyId, 'status', 'loading');
+    //GameDatabase.setPartyAttribute(Game.partyId, 'status', 'loading');
 
     if (tieCount == 3) {
       stdout.writeln("Ya'll a bunch a dummies, now nobody dies dummies.");
@@ -389,7 +390,7 @@ class Game {
       return null;
     }
 
-    //votes = getVotes(votingPlayers);
+    votes = await getVotes(whoIsVoting);
 
     //sorts list of people who got voted
     votes.sort((a, b) => a.getName().compareTo(b.getName()));
@@ -419,7 +420,7 @@ class Game {
       chosen = highestVoted[0];
     } else if (highestVoted.length > 1) {
       tieCount++;
-      return (calculateVote(highestVoted, votingPlayers));
+      return (calculateVote(highestVoted, votingPlayers, whoIsVoting));
     }
 
     if (isMafiaVoting) {
@@ -460,6 +461,7 @@ class Game {
     }
   }
 
+
   static void runGame(String partyUid, List<String> playerIdList) async {
     await setUp(partyUid, playerIdList);
 
@@ -468,12 +470,16 @@ class Game {
     }
 
 
-    while(await GameDatabase.getStatus(Game.partyId) != "loading"){
-      nightPhase();
-    }
+    GameDatabase.setNarration(Game.partyId, "intro");
+    GameDatabase.setPartyStatus(Game.partyId, "ingame");
+
+
+
+    /*
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n Narration: \n\n");
     print( await GameDatabase.getNarration(Game.partyId, Player.allThePlayers[0].uid, "intro"));
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    */
     //endGame();
 
   }

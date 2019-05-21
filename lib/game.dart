@@ -288,6 +288,14 @@ class Game {
     List<Player> b = await getVotes("doctor"); //gets list of who the doctor voted for
     Doctor.savePlayer(b[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
 
+    // real mafia bit whos up lmao its the mafia rip in peace
+    //so i need to get the player(s) that the mafia chooses to die first
+    //then after they have been flagged, during the loading phase it needs to kill that player
+    //killPlayer just sets their status to dead, doesnt actually kill them yet
+    //so the question right now is if killplayer will be able to check in if they had been saved since they kinda happen at the same time but as i type this i realize thats wrong so
+
+    Mafia.killPlayer(await calculateVote(Player.allThePlayers, Player.mafiaMembers, 'mafia'));
+
 
 
   }
@@ -384,7 +392,7 @@ class Game {
     Player chosen;
     List<Player> highestVoted = [];
     List<Player> votes = [];
-    //GameDatabase.setPartyAttribute(Game.partyId, 'status', 'loading');
+
 
     if (tieCount == 3) {
       stdout.writeln("Ya'll a bunch a dummies, now nobody dies dummies.");
@@ -425,15 +433,14 @@ class Game {
       return (calculateVote(highestVoted, votingPlayers, whoIsVoting));
     }
 
-    if (isMafiaVoting) {
+    if (whoIsVoting == 'mafia') {
       if (votes.length == 0) {
         return null;
       }
-    } else {
-      if (votes.length < ((votingPlayers.length / 2) + 1).floor()) {
-        return null;
-      }
-    }
+    } //else if (votes.length < ((votingPlayers.length / 2) + 1).floor()) {
+      //return null;
+      //}
+
 
     //Ensures at least a majority vote for town hangings.
     if (!(higher < ((votingPlayers.length / 2).floor()))) {
@@ -580,6 +587,22 @@ class Doctor extends Player {
       }
     }
 
+    if(docName == player.getName()){
+      if(savedSelf){
+        //fails but idk how to relay that to the player
+      }
+      else {
+        player.setSaved(true, player.uid);
+      }
+    }
+    else {
+      player.setSaved(true, player.uid);
+    }
+
+
+
+
+    /*
     if (player == null) {
     } else {
       if (!savedSelf) {
@@ -598,6 +621,9 @@ class Doctor extends Player {
         }
       }
     }
+    */
+
+
 
   }
 }

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'game.dart';
 import 'dart:math';
+import 'globals.dart' as globals;
 
 class GameDatabase {
 
@@ -71,6 +72,12 @@ class GameDatabase {
 
     // get num players
     int numPlayers = await getPartyNumPlayers(uid);
+
+    // stop timer if still running
+    if (globals.timer != null) {
+      globals.timer.cancel();
+      globals.timer = null;
+    }
 
     // if people left, update num players and delete player entry
     if (numPlayers > 1) {
@@ -382,7 +389,7 @@ class GameDatabase {
     int day = await ref.child("parties").child(partyUID).child("day").once().then((DataSnapshot snap) {
       return snap.value;
     });
-    new Timer.periodic(const Duration(seconds: 1), (Timer t) {
+    globals.timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       remaining--;
       ref.child("parties").child(partyUID).child("timer").set(remaining);
       if (remaining <= 0) {

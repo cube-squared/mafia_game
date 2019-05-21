@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -21,3 +23,6 @@ Query chatQuery;
 // THEME DROPDOWN (for persistence)
 List<DropdownMenuItem<String>> themeDropdownList = [];
 String themeDropdownValue = "original";
+
+// TIMER
+Timer timer;

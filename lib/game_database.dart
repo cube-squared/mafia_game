@@ -99,7 +99,11 @@ class GameDatabase {
     });
   }
 
-  static Future<void> setNarration(String partyUID, String event) async{
+  static String fixNarration(String narration, String name){
+    return narration.replaceAll("\$name", name);
+  }
+
+  static Future<void> setNarration(String partyUID, String event, String name) async{
     String mafia;
     String doctor;
     String innocent;
@@ -156,6 +160,10 @@ class GameDatabase {
       }
       break;
     }
+    mafia = fixNarration(mafia, name);
+    doctor = fixNarration(doctor, name);
+    innocent = fixNarration(innocent, name);
+
     ref.child("parties").child(partyUID).child("mafiaNarration").set(mafia);
     ref.child("parties").child(partyUID).child("doctorNarration").set(doctor);
     ref.child("parties").child(partyUID).child("innocentNarration").set(innocent);

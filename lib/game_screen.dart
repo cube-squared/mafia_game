@@ -542,9 +542,10 @@ class _PlayerSelectorState extends State<PlayerSelector> {
           .cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(player["uid"])) {
-        if (globals.darkMode)
+        if (globals.darkMode) {
           bkgColor = Colors.red.withOpacity(.5);
-        else if (role == "doctor" && day == false) {
+        }
+        if (role == "doctor" && day == false) {
           bkgColor = Colors.green[100];
           icon = iconSelected;
         }

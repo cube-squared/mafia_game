@@ -3,7 +3,6 @@ import 'dart:math';
 import 'game_database.dart';
 
 class Game2 {
-
   static Future<void> assignRoles(String partyUID) async {
     List<String> players = await GameDatabase.getAllPlayers(partyUID);
 
@@ -61,12 +60,14 @@ class Game2 {
       }
       GameDatabase.setPlayerAttribute(partyUID, players[i], "vote", null);
     }
+      GameDatabase.setPlayerAttribute(
+          partyUID, players[heDeadIndex], "alive", false);
+      GameDatabase.setPartyAttribute(partyUID, "daytime", false);
+      GameDatabase.setNarration(partyUID, "execution",
+          allData["players"][players[heDeadIndex]]["name"]);
+      GameDatabase.setPartyStatus(partyUID, "ingame");
+      GameDatabase.startCountdown(partyUID, 15, false);
 
-    GameDatabase.setPlayerAttribute(partyUID, players[heDeadIndex], "alive", false);
-    GameDatabase.setPartyAttribute(partyUID, "daytime", false);
-    GameDatabase.setNarration(partyUID, "execution", allData["players"][players[heDeadIndex]]["name"]);
-    GameDatabase.setPartyStatus(partyUID, "ingame");
-    GameDatabase.startCountdown(partyUID, 15, false);
   }
 
 

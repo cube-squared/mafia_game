@@ -209,7 +209,33 @@ class GameDatabase {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(uid).child("players").child(user.uid).child("status").set(status);
   }
-
+  /**static Future<void> checkWin(String partyUID) async {
+    dynamic allData = await GameDatabase.getAllTheDataFromTheStinkingParty(partyUID);
+    int numAlivePlayers = 0;
+    allData["players"].forEach((Map<String, String> player){
+      if(player["alive"] == true){
+        numAlivePlayers++;
+      }
+    });
+    int numMafia = 0;
+    allData["players"].forEach((Map<String, String> player){
+      if(player["alive"] == true && player["role"] == "mafia"){
+        numMafia++;
+      }
+    });
+    int numInnocent = 0;
+    allData["players"].forEach((Map<String, String> player){
+      if((player["alive"] == true && player["role"] == "innocent") || (player["alive"] == true && player["role"] == "doctor")){
+        numInnocent++;
+      }
+    });
+    if(numAlivePlayers == numInnocent){
+      GameDatabase.setPartyAttribute(partyUID, "status", "innocentWin");
+    }
+    else if(numAlivePlayers == numMafia){
+      GameDatabase.setPartyAttribute(partyUID, "status", "mafiaWin");
+    }
+  }**/
   static Future<StreamSubscription<Event>> getPartyInfoStream(String uid, void onData(Map<String, dynamic> map)) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).onValue.listen((Event event) {

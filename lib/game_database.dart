@@ -209,33 +209,44 @@ class GameDatabase {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     ref.child("parties").child(uid).child("players").child(user.uid).child("status").set(status);
   }
-  /**static Future<void> checkWin(String partyUID) async {
+  static Future<void> checkWin(String partyUID) async {
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print("CHECK 1");
     dynamic allData = await GameDatabase.getAllTheDataFromTheStinkingParty(partyUID);
+
     int numAlivePlayers = 0;
     allData["players"].forEach((Map<String, String> player){
+      print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+      print(player["alive"]);
       if(player["alive"] == true){
         numAlivePlayers++;
       }
     });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numAlivePlayers);
     int numMafia = 0;
     allData["players"].forEach((Map<String, String> player){
       if(player["alive"] == true && player["role"] == "mafia"){
         numMafia++;
       }
     });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numMafia);
     int numInnocent = 0;
     allData["players"].forEach((Map<String, String> player){
       if((player["alive"] == true && player["role"] == "innocent") || (player["alive"] == true && player["role"] == "doctor")){
         numInnocent++;
       }
     });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numInnocent);
     if(numAlivePlayers == numInnocent){
       GameDatabase.setPartyAttribute(partyUID, "status", "innocentWin");
     }
     else if(numAlivePlayers == numMafia){
       GameDatabase.setPartyAttribute(partyUID, "status", "mafiaWin");
     }
-  }**/
+  }
   static Future<StreamSubscription<Event>> getPartyInfoStream(String uid, void onData(Map<String, dynamic> map)) async {
     DatabaseReference ref = FirebaseDatabase.instance.reference();
     StreamSubscription<Event> subscription = ref.child("parties").child(uid).onValue.listen((Event event) {
@@ -442,7 +453,14 @@ class GameDatabase {
     });
 
   }
+  static dynamic getWinNarration(String role, String partyUID) async{
+    dynamic allData = await GameDatabase.getAllTheDataFromTheStinkingParty(partyUID);
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    return ref.child("themes").child(allData["theme"]).child("win").child("role").once().then((DataSnapshot snap) {
+      return snap.value;
+    });
 
+  }
 }
 
 String _getDateNow() {

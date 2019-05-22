@@ -66,7 +66,16 @@ class _GameScreenState extends State<GameScreen> {
     } else if (gamedata['status'] == "loading") {
       widgets.add(WaitingLoading(daytime: gamedata['daytime'],));
     }
-
+    if(gamedata["status"] == "mafiaWin"){
+      widgets = [];
+      String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+      widgets.add(MafiaWon());
+    }
+    else if(gamedata["status"] == "innocentWin"){
+      widgets = [];
+      String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+      widgets.add(InnocentsWon(text: gamedata[narration]));
+    }
     Color timerColor;
     if (gamedata["timer"] > 20)
       timerColor = Colors.green;
@@ -279,8 +288,64 @@ class YouDead extends StatelessWidget {
     );
   }
 }
-
-
+class MafiaWon extends StatelessWidget {
+  @override
+  MafiaWon({Key key, this.text}) : super(key: key);
+  String text;
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("The Mafia Won!", style: TextStyle(fontSize: 20, color: Colors.red)),
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                    child: Text(
+                      // Check if the string is null
+                        (text != null ? text : ''),
+                        style: TextStyle(fontSize: 15)
+                    )
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+class InnocentsWon extends StatelessWidget {
+  @override
+  InnocentsWon({Key key, this.text}) : super(key: key);
+  String text;
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("The Innocents won!", style: TextStyle(fontSize: 20, color: Colors.red)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text(
+                    // Check if the string is null
+                      (text != null ? text : ''),
+                      style: TextStyle(fontSize: 15)
+                  )
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
 class WaitingNight extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -542,9 +607,13 @@ class _PlayerSelectorState extends State<PlayerSelector> {
           .cardColor;
       Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
       if (selectedPlayers.contains(player["uid"])) {
-        if (globals.darkMode) {
+        if (globals.darkMode && role == "doctor" && day == false) {
+          bkgColor = Colors.green.withOpacity(.5);
+        }
+        else if(globals.darkMode){
           bkgColor = Colors.red.withOpacity(.5);
         }
+        else
         if (role == "doctor" && day == false) {
           bkgColor = Colors.green[100];
           icon = iconSelected;

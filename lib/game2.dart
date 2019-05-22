@@ -60,14 +60,63 @@ class Game2 {
       }
       GameDatabase.setPlayerAttribute(partyUID, players[i], "vote", null);
     }
+
       GameDatabase.setPlayerAttribute(
           partyUID, players[heDeadIndex], "alive", false);
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print("Check 1");
+    allData = await GameDatabase.getAllTheDataFromTheStinkingParty(partyUID);
+    String win = "none";
+    int numAlivePlayers = 0;
+    players.forEach((String uid){
+      print(uid);
+      print(allData["players"][uid]["alive"]);
+      if(allData["players"][uid]["alive"]){
+        numAlivePlayers++;
+      }
+    });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numAlivePlayers);
+    int numMafia = 0;
+    players.forEach((String uid){
+      if(allData["players"][uid]["alive"] && allData["players"][uid]["role"] == "mafia"){
+        numMafia++;
+      }
+    });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numMafia);
+    int numInnocent = 0;
+    players.forEach((String uid){
+      if((allData["players"][uid]["alive"] && allData["players"][uid]["role"] == "innocent") || (allData["players"][uid]["alive"] && allData["players"][uid]["role"] == "doctor")){
+        numInnocent++;
+      }
+    });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numInnocent);
+    if(numAlivePlayers == numInnocent){
+      win = "innocentWin";
+    }
+    else if(numAlivePlayers == numMafia){
+      win = "mafiaWin";
+    }
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(win);
+    if(win == "none") {
       GameDatabase.setPartyAttribute(partyUID, "daytime", false);
       GameDatabase.setNarration(partyUID, "execution",
           allData["players"][players[heDeadIndex]]["name"]);
       GameDatabase.setPartyStatus(partyUID, "ingame");
       GameDatabase.startCountdown(partyUID, 15, false);
-
+    }
+    else{
+      GameDatabase.setPartyStatus(partyUID, win);
+      if(win == "mafiaWin"){
+        GameDatabase.setPartyAttribute(partyUID, "mafiaNarration", GameDatabase.getWinNarration("mafia", partyUID) );
+      }
+      else if(win == "innocentWin"){
+        GameDatabase.setPartyAttribute(partyUID, "mafiaNarration", GameDatabase.getWinNarration("innocent", partyUID) );
+      }
+    }
   }
 
 
@@ -115,11 +164,59 @@ class Game2 {
     } else {
       GameDatabase.setNarration(partyUID, "murder", "nobody");
     }
-
-    GameDatabase.setPartyAttribute(partyUID, "daytime", true);
-    GameDatabase.setPartyAttribute(partyUID, "day", allData["day"] + 1);
-    GameDatabase.setPartyStatus(partyUID, "ingame");
-    GameDatabase.startCountdown(partyUID, 15, true);
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print("Check 1");
+    allData = await GameDatabase.getAllTheDataFromTheStinkingParty(partyUID);
+    String win = "none";
+    int numAlivePlayers = 0;
+    players.forEach((String uid){
+      print(uid);
+    print(allData["players"][uid]["alive"]);
+      if(allData["players"][uid]["alive"]){
+        numAlivePlayers++;
+      }
+    });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numAlivePlayers);
+    int numMafia = 0;
+    players.forEach((String uid){
+      if(allData["players"][uid]["alive"] && allData["players"][uid]["role"] == "mafia"){
+        numMafia++;
+      }
+    });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numMafia);
+    int numInnocent = 0;
+    players.forEach((String uid){
+      if((allData["players"][uid]["alive"] && allData["players"][uid]["role"] == "innocent") || (allData["players"][uid]["alive"] && allData["players"][uid]["role"] == "doctor")){
+        numInnocent++;
+      }
+    });
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(numInnocent);
+    if(numAlivePlayers == numInnocent){
+      win = "innocentWin";
+    }
+    else if(numAlivePlayers == numMafia){
+      win = "mafiaWin";
+    }
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    print(win);
+    if(win == "none") {
+      GameDatabase.setPartyAttribute(partyUID, "daytime", true);
+      GameDatabase.setPartyAttribute(partyUID, "day", allData["day"] + 1);
+      GameDatabase.setPartyStatus(partyUID, "ingame");
+      GameDatabase.startCountdown(partyUID, 15, true);
+    }
+    else{
+      GameDatabase.setPartyStatus(partyUID, win);
+      if(win == "mafiaWin"){
+        GameDatabase.setPartyAttribute(partyUID, "mafiaNarration", GameDatabase.getWinNarration("mafia", partyUID) );
+      }
+      else if(win == "innocentWin"){
+        GameDatabase.setPartyAttribute(partyUID, "mafiaNarration", GameDatabase.getWinNarration("innocent", partyUID) );
+      }
+    }
   }
 
 }

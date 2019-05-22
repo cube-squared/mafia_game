@@ -502,6 +502,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     if (day == true) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
       votingPrompt = "Select who you think is the Mafia:";
+      picWidgets = getPicWidgets("all");
     }
    else if (day == false) {
       if (role == "doctor") {

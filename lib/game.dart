@@ -42,8 +42,8 @@ abstract class Player {
     GameDatabase.setPlayerAttribute(Game.partyId, id, "name", name);
   }
 
-  void setStatus(bool status, String id) {
-    GameDatabase.setPlayerAttribute(Game.partyId, id, "alive", status);
+  void setAlive(bool alive, String id) {
+    GameDatabase.setPlayerAttribute(Game.partyId, id, "alive", alive);
   }
 
   void setSaved(bool saved, String id) {
@@ -108,7 +108,7 @@ class Game {
   static int numOfPlayers; //change to get from database later
   static int numOfMafia = sqrt(numOfPlayers).floor();
   static int tieCount = 0;
-  static String partyId = "-Lew9d89Ycz74hh798Lo";
+  static String partyId;
   static String leaderUid;
   static String doctorUid;
 
@@ -294,6 +294,8 @@ class Game {
 
 
     // real doctor bit whos up
+    print("part1");
+
     List<Player> s = await getVotes("doctor"); //gets list of who the doctor voted for
     Doctor.savePlayer(s[0]);  //only saves the first person in the list but it should only have one person in it anyway so who cares tbh ngl
 
@@ -303,9 +305,13 @@ class Game {
     //killPlayer just sets their status to dead, doesnt actually kill them yet
     //so the question right now is if killplayer will be able to check in if they had been saved since they kinda happen at the same time but as i type this i realize thats wrong so
 
-    Mafia.killPlayer(await calculateVote(Player.allThePlayers, Player.mafiaMembers, 'mafia'));
+    Player deadPerson = await calculateVote(Player.allThePlayers, Player.mafiaMembers, 'mafia');
 
-  print(name+"\n"*100000);
+    //print("before the d");
+    //List<Player> d = await getVotes("mafia");
+    //print("this is the print" + d[0].name);
+    Mafia.killPlayer(deadPerson);
+
 
   }
 
@@ -327,6 +333,7 @@ class Game {
   static Future<List<Player>> getVotes(String whoIsVoting) async {
     List<Player> votes = []; //what is being returned
     List<String> voteIds = []; // to store things from database
+    List<String> vote;
 
     switch(whoIsVoting){
       case "doctor": {
@@ -338,9 +345,7 @@ class Game {
       }
       break;
       case "mafia": {
-        for(int i = 0; i < Player.mafiaMembers.length; i++){
-          voteIds = []..addAll(await GameDatabase.getPlayerVote(Game.partyId, Player.mafiaMembers[i].uid));
-        }
+        voteIds = await GameDatabase.getPlayerVote(Game.partyId, Player.mafiaMembers[0].uid);
         for(int i = 0; i < voteIds.length; i++){
           votes.add(makeUidIntoPerson(voteIds[i]));
         }
@@ -437,19 +442,18 @@ class Game {
     }
     if (highestVoted.length == 1) {
       chosen = highestVoted[0];
-      return chosen;
     } else if (highestVoted.length > 1) {
       tieCount++;
-      return (calculateVote(highestVoted, votingPlayers, whoIsVoting));
+      return (calculateVote(voteablePlayers, votingPlayers, whoIsVoting));
     }
 
     if (whoIsVoting == 'mafia') {
       if (votes.length == 0) {
         return null;
       }
-    } //else if (votes.length < ((votingPlayers.length / 2) + 1).floor()) {
-      //return null;
-      //}
+    } else if (votes.length < ((votingPlayers.length / 2) + 1).floor()) {
+      return null;
+      }
 
 
     //Ensures at least a majority vote for town hangings.
@@ -510,7 +514,7 @@ class Game {
       nightPhase();
       GameDatabase.updateDay(day, partyUid);
       GameDatabase.setPartyStatus(partyUid, "ingame");
-      GameDatabase.startCountdown(partyUid, 25, false);
+      //GameDatabase.startCountdown(partyUid, 25, false);
      // dayPhase();
     }
 
@@ -550,7 +554,7 @@ class Mafia extends Player {
   }
 
 //For mafia at night to kill people
-  static void killPlayer(Player player) async {
+  static void killPlayer(Player player) {
     /*
     if(player == null) {
     } else {
@@ -561,10 +565,7 @@ class Mafia extends Player {
     }
    */
 
-    if (await player.getSaved(player.uid) == false){
-      player.setStatus(false, player.uid);
-    }
-
+      player.setAlive(false, player.uid);
   }
 }
 
@@ -597,7 +598,7 @@ class Doctor extends Player {
   }
 
 //for doctor at night to save person
-  static void savePlayer(Player player) async{
+  static void savePlayer(Player player){
     String docName;
     for (int i = 0; i < Player.allThePlayers.length; i++) {
       if (Player.allThePlayers[i].getRole() == "Doctor") {
@@ -616,33 +617,6 @@ class Doctor extends Player {
     else {
       player.setSaved(true, player.uid);
     }
-
-
-
-
-    /*
-    if (player == null) {
-    } else {
-      if (!savedSelf) {
-        if (await player.getSaved(player.uid) == false) {
-           player.setSaved(true, player.uid);
-        }
-        if (player.getName() == docName) {
-          savedSelf = true;
-        }
-      } else {
-        if (player.getName() == docName) {
-        } else {
-          if (await player.getSaved(player.uid) == false) {
-            player.setSaved(true, player.uid);
-          }
-        }
-      }
-    }
-    */
-
-
-
   }
 }
 

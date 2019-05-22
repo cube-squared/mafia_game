@@ -384,7 +384,55 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     });
     GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
   }
+  List<List<Widget>> getPicWidgets(String role) {
+    List<List<Widget>> picWidgets = [];
+    if(role == "all") {
+      allPlayers.forEach((Map<String, String> player) {
+        List<Widget> widgeList = [];
+        allPlayers.forEach((Map<String, String> player2) {
+          if (gamedata["players"][player2["uid"]]["vote"] != null) {
+            if (gamedata["players"][player2["uid"]]["vote"][0] ==
+                player["uid"]) {
+              widgeList.add(
+                CircleAvatar(
+                  backgroundImage: NetworkImage(
+                      gamedata["players"][player2["uid"]]["photoUrl"]),
+                  radius: 20,
 
+                ),
+
+              );
+            }
+          }
+        });
+        picWidgets.add(widgeList);
+      });
+    }
+    else {
+      allPlayers.forEach((Map<String, String> player) {
+        List<Widget> widgeList = [];
+        allPlayers.forEach((Map<String, String> player2) {
+          if (gamedata["players"][player2["uid"]]["vote"] != null) {
+            if (gamedata["players"][player2["uid"]]["vote"][0] ==
+                player["uid"] &&
+                gamedata["players"][player2["uid"]]["role"] == role) {
+              widgeList.add(
+                CircleAvatar(
+                  backgroundImage: NetworkImage(
+                      gamedata["players"][player2["uid"]]["photoUrl"]),
+                  radius: 20,
+
+                ),
+
+              );
+            }
+          }
+        });
+        picWidgets.add(widgeList);
+      });
+    }
+    return picWidgets;
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -417,7 +465,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       });
     }
 
-
+    List<List<Widget>> picWidgets;
     if (day == true) {
       iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
       votingPrompt = "Select who you think is the Mafia:";
@@ -426,10 +474,12 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       if (role == "doctor") {
         iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
         votingPrompt = "Select a player to save:";
+        picWidgets = getPicWidgets("doctor");
       }
       else if (role == "mafia") {
         //numberSelected = (Game.numOfMafia / sqrt(allPlayers.length)).round();
         iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
+        picWidgets = getPicWidgets("mafia");
         if (numberSelected > 1) {
           votingPrompt =
               "Select " + numberSelected.toString() + " players to kill:";
@@ -441,29 +491,9 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     }
 
     // put prompt at top
-    var num2 = 0;
     List<Widget> widgets = new List<Widget>();
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
-    List<List<Widget>> picWidgets = [];
-    allPlayers.forEach((Map<String, String> player){
-      List<Widget> widgeList = [];
-      allPlayers.forEach((Map<String, String> player2){
-        if(gamedata["players"][player2["uid"]]["vote"] != null){
-        if(gamedata["players"][player2["uid"]]["vote"][0] == player["uid"]) {
-          widgeList.add(
-            CircleAvatar(
-              backgroundImage: NetworkImage(
-                  gamedata["players"][player2["uid"]]["photoUrl"]),
-              radius: 20,
 
-            ),
-
-          );
-        }
-        }
-      });
-      picWidgets.add(widgeList);
-    });
     // build list of players to select from
     var num = 0;
     allPlayers.forEach((Map<String, String> player){

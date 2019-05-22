@@ -9,6 +9,7 @@ import 'game_screen.dart';
 import 'chat_screen.dart';
 import 'ui_tools.dart';
 import 'game.dart';
+import 'game2.dart';
 
 class JoinedPartyScreen extends StatefulWidget {
   JoinedPartyScreen({Key key, this.uid}) : super(key: key);
@@ -162,7 +163,8 @@ class _FABState extends State<FAB> {
         label: Text("Start Game"),
         backgroundColor: Colors.blue,
         onPressed: () {
-          GameDatabase.getAllPlayers(widget.uid).then((players) => Game.runGame(widget.uid, players));
+          Game2.assignRoles(widget.uid);
+          GameDatabase.setNarration(widget.uid, "intro", "");
           GameDatabase.setPartyStatus(widget.uid, "ingame");
           GameDatabase.startCountdown(widget.uid, 15, false);
         },

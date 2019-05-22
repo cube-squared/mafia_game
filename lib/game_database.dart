@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'game.dart';
 import 'dart:math';
 import 'globals.dart' as globals;
+import 'game2.dart';
 
 class GameDatabase {
 
@@ -395,11 +396,25 @@ class GameDatabase {
       if (remaining <= 0) {
         t.cancel();
         ref.child("parties").child(partyUID).child("status").set("loading");
-        Game.nextDay(partyUID, daytime, day);
+        if (daytime) {
+          Game2.processDay(partyUID);
+        } else {
+          Game2.processNight(partyUID);
+        }
+        //Game.nextDay(partyUID, daytime, day);
       }
     });
 
     return true;
+  }
+
+  static dynamic getAllTheDataFromTheStinkingParty(String partyUID) {
+
+    DatabaseReference ref = FirebaseDatabase.instance.reference();
+    return ref.child("parties").child(partyUID).once().then((DataSnapshot snap) {
+      return snap.value;
+    });
+
   }
 
 }

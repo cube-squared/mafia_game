@@ -43,16 +43,23 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     List<Widget> widgets = [];
 
-    if (gamedata['status'] == "ingame") {
+    if (!gamedata["players"][globals.user.uid]["alive"]) {
+      widgets.add(YouDead());
+    }
 
+    if (gamedata['status'] == "ingame") {
+      if (gamedata["players"][globals.user.uid]["alive"]){
         widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
+      }
         String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
         widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]));
 
 
 
       if (gamedata["daytime"] || gamedata['players'][globals.user.uid]["role"] != "innocent") {
-        widgets.add(PlayerSelector(uid: widget.uid));
+        if (gamedata["players"][globals.user.uid]["alive"]) {
+          widgets.add(PlayerSelector(uid: widget.uid));
+        }
       } else {
         widgets.add(WaitingNight());
       }
@@ -247,6 +254,32 @@ class _DayNightHeadingState extends State<DayNightHeading> {
     );
   }
 }
+
+
+class YouDead extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("You Died.", style: TextStyle(fontSize: 20, color: Colors.red)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text("You are now a spectator...", style: TextStyle(fontSize: 15)),
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+
 
 class WaitingNight extends StatelessWidget {
   @override
@@ -519,20 +552,24 @@ class _PlayerSelectorState extends State<PlayerSelector> {
           icon = iconSelected;
         }
       }
-      widgets.add(Card(
-        color: bkgColor,
-        child:
+      if (gamedata["players"][player["uid"]]["alive"]) {
+        widgets.add(Card(
+          color: bkgColor,
+          child:
           ListTile(
-          leading: icon,
-          title: Text(player["name"]),
-          trailing:
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: picWidgets[num]
+            leading: icon,
+            title: Text(player["name"]),
+            trailing:
+            Row(
+                mainAxisSize: MainAxisSize.min,
+                children: picWidgets[num]
+            ),
+            onTap: () {
+              addToSelection(player["uid"]);
+            },
           ),
-          onTap: () {addToSelection(player["uid"]);},
-        ),
-      ));
+        ));
+      }
       num++;
     });
 

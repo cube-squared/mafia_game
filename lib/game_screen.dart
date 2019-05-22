@@ -441,10 +441,31 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     }
 
     // put prompt at top
+    var num2 = 0;
     List<Widget> widgets = new List<Widget>();
     widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
+    List<List<Widget>> picWidgets = [];
+    allPlayers.forEach((Map<String, String> player){
+      List<Widget> widgeList = [];
+      allPlayers.forEach((Map<String, String> player2){
+        if(gamedata["players"][player2["uid"]]["vote"] != null){
+        if(gamedata["players"][player2["uid"]]["vote"][0] == player["uid"]) {
+          widgeList.add(
+            CircleAvatar(
+              backgroundImage: NetworkImage(
+                  gamedata["players"][player2["uid"]]["photoUrl"]),
+              radius: 20,
 
+            ),
+
+          );
+        }
+        }
+      });
+      picWidgets.add(widgeList);
+    });
     // build list of players to select from
+    var num = 0;
     allPlayers.forEach((Map<String, String> player){
 
       if(player["role"] == "mafia"){
@@ -470,12 +491,19 @@ class _PlayerSelectorState extends State<PlayerSelector> {
       }
       widgets.add(Card(
         color: bkgColor,
-        child: ListTile(
+        child:
+          ListTile(
           leading: icon,
           title: Text(player["name"]),
+          trailing:
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: picWidgets[num]
+          ),
           onTap: () {addToSelection(player["uid"]);},
         ),
       ));
+      num++;
     });
 
     // return final card for UI

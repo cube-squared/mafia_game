@@ -7,6 +7,11 @@ import 'globals.dart' as globals;
 import 'main.dart';
 import 'chat_screen.dart';
 import 'ui_tools.dart';
+import 'dart:async';
+import 'game.dart';
+import 'dart:math';
+import 'package:mafia_game/game_database.dart';
+
 
 class GameScreen extends StatefulWidget {
   GameScreen({Key key, this.uid}) : super(key: key);
@@ -17,52 +22,138 @@ class GameScreen extends StatefulWidget {
   _GameScreenState createState() => _GameScreenState();
 }
 
+Map<String, dynamic> gamedata;
 class _GameScreenState extends State<GameScreen> {
+
+  StreamSubscription infoSubscription;
+
+  @override
+  void initState() {
+    GameDatabase.getGameInfoStream(widget.uid, _updateInfo).then((StreamSubscription s) => infoSubscription = s);
+    super.initState();
+  }
+
+  void _updateInfo(Map<String, dynamic> map) {
+    setState(() {
+      gamedata = map;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold (
-      appBar: AppBar(
-        title: Text("In Game - Day Phase"),
-      ),
-      body: ListView(
-        children: <Widget>[
-          DayNightHeading(day: true, dayNum: 10,),
-          Narration(role: "Mafia", text: "It's day 10. The town wakes up to find Trey murdered in cold blood and left out to dry hanging from the clothes line in his backyard. You are pretty sure no one else knows you are a part of the mafia yet (and a part of Trey's murder), but you can't be too sure. You know that one guy has been sounding pretty suspicious when he was talking about you. Maybe it's time to take him out."),
-          PlayerSelector(players: ["Spencer", "Daryl", "Matt", "Crockett", "Wyatt", "Elizabeth", "Scott"], numSelect: 2, prompt: "Select 2 people to kill:", selectedIcon: Icon(MdiIcons.skullOutline, color: Colors.red),),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            IconButton(icon: Icon(Icons.help), onPressed: () {
-              UITools.showBasicPopup(context, "Game Information", "You are part of the Mafia. Every night, you will be able to select someone to kill with your fellow mafia members. If the medic doesn't choose to save that person, they will be killed. During the day, all the townspeople will vote on someone to hang for suspicion of being a mafia member, so it's your job to keep your job secret.");
-            }),
-            Row(
-              children: <Widget>[
-                Icon(MdiIcons.timer, color: Colors.green,),
-                Text("1:23", style: TextStyle(fontSize: 23, color: Colors.green),),
-              ],
-            ),
-            IconButton(icon: Icon(Icons.chat), onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ChatScreen(uid: widget.uid)),
-              );
-            }),
-          ],
+    List<Widget> widgets = [];
+
+    if (!gamedata["players"][globals.user.uid]["alive"]) {
+      widgets.add(YouDead());
+    }
+
+    if (gamedata['status'] == "ingame") {
+      if (gamedata["players"][globals.user.uid]["alive"]){
+        widgets.add(DayNightHeading(day: gamedata["daytime"], dayNum: gamedata["day"]));
+      }
+        String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+        widgets.add(Narration(day: gamedata['day'], text: gamedata[narration]));
+
+
+
+      if (gamedata["daytime"] || gamedata['players'][globals.user.uid]["role"] != "innocent") {
+        if (gamedata["players"][globals.user.uid]["alive"]) {
+          widgets.add(PlayerSelector(uid: widget.uid));
+        }
+      } else {
+        widgets.add(WaitingNight());
+      }
+    } else if (gamedata['status'] == "loading") {
+      widgets.add(WaitingLoading(daytime: gamedata['daytime'],));
+    }
+    if(gamedata["status"] == "mafiaWin"){
+      widgets = [];
+      String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+      widgets.add(MafiaWon());
+    }
+    else if(gamedata["status"] == "innocentWin"){
+      widgets = [];
+      String narration = gamedata['players'][globals.user.uid]['role'] + "Narration";
+      widgets.add(InnocentsWon(text: gamedata[narration]));
+    }
+    Color timerColor;
+    if (gamedata["timer"] > 20)
+      timerColor = Colors.green;
+    else if (gamedata["timer"] <= 10)
+      timerColor = Colors.red;
+    else
+      timerColor = Colors.orange;
+
+    return WillPopScope(
+      onWillPop: () => _checkLeave(),
+      child: Scaffold (
+        appBar: AppBar(
+          title: Text("In Game - " + gamedata["name"]),
+        ),
+        body: ListView(
+          children: widgets,
+        ),
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(icon: Icon(Icons.help), onPressed: () {
+                UITools.showBasicPopup(context, "Game Information", "This game was created by Cube Squared, the best company in the world at making dumb stuff actually kind of work.");
+              }),
+              Row(
+                children: <Widget>[
+                  Icon(MdiIcons.timer, color: timerColor,),
+                  Text(gamedata["timer"].toString(), style: TextStyle(fontSize: 23, color: timerColor),),
+                ],
+              ),
+              IconButton(icon: Icon(Icons.chat), onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatScreen(uid: widget.uid)),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  Future<void> _checkLeave() async {
+    if (globals.confirmOnPartyExit || globals.confirmOnPartyExit == null) {
+      return showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+          title: Text("Leaving Party"),
+          content: Text("Are you sure you want to leave this party?"),
+          actions: <Widget> [
+            FlatButton(
+                child: Text("Stay"),
+                onPressed: () {
+                  Navigator.pop(context); // close the dialog
+                }
+            ),
+            FlatButton(
+                child: Text("Leave"),
+                onPressed: () {
+                  Navigator.pop(context); // close the dialog
+                  Navigator.pop(context,true); // leave party UI
+                  GameDatabase.leaveParty(widget.uid, globals.user);
+                  globals.chatQuery = null; // reset internal party chat cache
+                }
+            ),
+          ],
+        ),
+      );
+    } else {
+      Navigator.pop(context,true); // leave party UI
+      GameDatabase.leaveParty(widget.uid, globals.user);
+      globals.chatQuery = null; // reset internal party chat cache
+    }
+  }
+
 }
-
-
-
-
 
 class DayNightHeading extends StatefulWidget {
   DayNightHeading({Key key, this.day, this.dayNum}) : super(key: key);
@@ -79,6 +170,10 @@ class _DayNightHeadingState extends State<DayNightHeading> {
   Widget build(BuildContext context) {
     String phase;
     Color phaseColor;
+    String role = gamedata['players'][globals.user.uid]['role'].toString().toLowerCase();
+
+    String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
     if (widget.day) {
       phase = "Day";
       phaseColor = Colors.orange;
@@ -93,24 +188,71 @@ class _DayNightHeadingState extends State<DayNightHeading> {
           child: Container (
             padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
             width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // User and Role
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text("$phase Phase", style: TextStyle(fontSize: 30, color: phaseColor)),
-                    Text("Day " + widget.dayNum.toString(), style: TextStyle(fontSize: 20)),
+                    // User avatar/name
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(globals.user.photoUrl),
+                          radius: 20,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(globals.user.displayName, style: TextStyle(fontSize: 20)),
+                        ),
+                      ],
+                    ),
+                    // Role text/icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        // Get role from Firebase
+                        Text(
+                            (role != '' ? capitalize(role) : 'Unassigned'),
+                            style: TextStyle(
+                                fontSize: 20,
+                                color:
+                                (
+                                    (role == 'doctor') ? Colors.blue :
+                                    (role == 'mafia') ? Colors.red :
+                                    null
+                                )
+                            )
+                        ),
+                        Icon(
+                            (
+                                (role == 'innocent') ? Icons.person :
+                                (role == 'doctor') ? MdiIcons.doctor :
+                                (role == 'mafia') ? MdiIcons.hatFedora :
+                                null
+                            ),
+                            color:
+                            (
+                                (role == 'doctor') ? Colors.blue :
+                                (role == 'mafia') ? Colors.red :
+                                null
+                            ),
+                            size: 30
+                        ),
+                      ],
+                    ),
                   ],
                 ),
+
+                // Role Description
                 Column(
                   children: <Widget>[
-                    Text("You are", style: TextStyle(fontSize: 12)),
-                    Row(
-                      children: <Widget>[
-                        Text("Mafia", style: TextStyle(fontSize: 25, color: Colors.red)),
-                        Icon(MdiIcons.hatFedora, color: Colors.red, size: 30),
-                      ],
+                    FutureBuilder<Object>(
+                        future: GameDatabase.getRoleDescription(role),
+                        builder: (context, snapshot) {
+                          return Text(snapshot.data.toString(), style: TextStyle(fontSize: 15));
+                        }
                     ),
                   ],
                 ),
@@ -123,8 +265,7 @@ class _DayNightHeadingState extends State<DayNightHeading> {
 }
 
 
-
-class WaitingForPlayers extends StatelessWidget {
+class YouDead extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -135,7 +276,92 @@ class WaitingForPlayers extends StatelessWidget {
             width: double.infinity,
             child: Column(
               children: <Widget>[
-                Text("Waiting for other players...", style: TextStyle(fontSize: 20, color: Colors.green)),
+                Text("You Died.", style: TextStyle(fontSize: 20, color: Colors.red)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text("You are now a spectator...", style: TextStyle(fontSize: 15)),
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+class MafiaWon extends StatelessWidget {
+  @override
+  MafiaWon({Key key, this.text}) : super(key: key);
+  String text;
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("The Mafia Won!", style: TextStyle(fontSize: 20, color: Colors.red)),
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                    child: Text(
+                      // Check if the string is null
+                        (text != null ? text : ''),
+                        style: TextStyle(fontSize: 15)
+                    )
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+class InnocentsWon extends StatelessWidget {
+  @override
+  InnocentsWon({Key key, this.text}) : super(key: key);
+  String text;
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("The Innocents won!", style: TextStyle(fontSize: 20, color: Colors.red)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text(
+                    // Check if the string is null
+                      (text != null ? text : ''),
+                      style: TextStyle(fontSize: 15)
+                  )
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
+class WaitingNight extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text("You sleep soundly through the night.", style: TextStyle(fontSize: 20, color: Colors.green)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text("Waiting for other players...", style: TextStyle(fontSize: 15)),
+                ),
               ],
             ),
           )
@@ -144,13 +370,43 @@ class WaitingForPlayers extends StatelessWidget {
   }
 }
 
+class WaitingLoading extends StatelessWidget {
+  WaitingLoading({Key key, this.daytime}) : super(key: key);
+  bool daytime = false;
 
-
+  @override
+  Widget build(BuildContext context) {
+    String text = "";
+    if (daytime) {
+      text = "The day is coming to an end.";
+    } else {
+      text = "You begin to wake up.";
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
+      child: Card (
+          child: Container (
+            padding: EdgeInsets.all(10.0),
+            width: double.infinity,
+            child: Column(
+              children: <Widget>[
+                Text(text, style: TextStyle(fontSize: 35, color: Colors.blue)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Text("Waiting for the host...", style: TextStyle(fontSize: 15)),
+                ),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+}
 
 class Narration extends StatelessWidget {
-  Narration({Key key, this.role, this.text}) : super(key: key);
+  Narration({Key key, this.day, this.text}) : super(key: key);
 
-  final String role;
+  final int day;
   final String text;
 
   @override
@@ -167,10 +423,14 @@ class Narration extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Text("Day 10", style: TextStyle(fontSize: 20)),
+                    Text("Day " + day.toString(), style: TextStyle(fontSize: 20)),
                   ],
                 ),
-                Text(text, style: TextStyle(fontSize: 15))
+                Text(
+                  // Check if the string is null
+                    (text != null ? text : ''),
+                    style: TextStyle(fontSize: 15)
+                )
               ],
             ),
           )
@@ -179,22 +439,35 @@ class Narration extends StatelessWidget {
   }
 }
 
-
-
 class PlayerSelector extends StatefulWidget {
-  PlayerSelector({Key key, this.players, this.numSelect, this.prompt, this.selectedIcon}) : super(key: key);
+  PlayerSelector({Key key, this.uid}) : super(key: key);
 
-  final List<String> players;
-  final int numSelect;
-  final String prompt;
-  final Icon selectedIcon;
+  final String uid;
 
   @override
   _PlayerSelectorState createState() => _PlayerSelectorState();
 }
 
+List<Map<String, String>> allPlayers;
 class _PlayerSelectorState extends State<PlayerSelector> {
   List<String> selectedPlayers = new List<String>();
+  int numberSelected = 1;
+  String votingPrompt = "hi";
+  Icon iconSelected = Icon(MdiIcons.vote);
+
+  StreamSubscription playerSubscription;
+
+  @override
+  void initState() {
+    GameDatabase.getAllPlayersNamesStream(widget.uid, _updateInfo).then((StreamSubscription s) => playerSubscription = s);
+    super.initState();
+  }
+
+  void _updateInfo(List<Map<String, String>> list) {
+    setState(() {
+      allPlayers = list;
+    });
+  }
 
   void addToSelection(String name) {
     setState(() {
@@ -202,36 +475,173 @@ class _PlayerSelectorState extends State<PlayerSelector> {
         selectedPlayers.remove(name);
         return;
       }
-      if (selectedPlayers.length >= widget.numSelect) {
+      if (selectedPlayers.length >= numberSelected) {
         selectedPlayers.remove(selectedPlayers[0]);
       }
       selectedPlayers.add(name);
     });
+    GameDatabase.setPlayerAttribute(widget.uid, globals.user.uid, "vote", selectedPlayers);
   }
+  List<List<Widget>> getPicWidgets(String role) {
+    List<List<Widget>> picWidgets = [];
+    if(role == "all") {
+      allPlayers.forEach((Map<String, String> player) {
+        List<Widget> widgeList = [];
+        allPlayers.forEach((Map<String, String> player2) {
+          if (gamedata["players"][player2["uid"]]["vote"] != null) {
+            if (gamedata["players"][player2["uid"]]["vote"][0] ==
+                player["uid"]) {
+              widgeList.add(
+                CircleAvatar(
+                  backgroundImage: NetworkImage(
+                      gamedata["players"][player2["uid"]]["photoUrl"]),
+                  radius: 20,
 
+                ),
+
+              );
+            }
+          }
+        });
+        picWidgets.add(widgeList);
+      });
+    }
+    else {
+      allPlayers.forEach((Map<String, String> player) {
+        List<Widget> widgeList = [];
+        allPlayers.forEach((Map<String, String> player2) {
+          if (gamedata["players"][player2["uid"]]["vote"] != null) {
+            if (gamedata["players"][player2["uid"]]["vote"][0] ==
+                player["uid"] &&
+                gamedata["players"][player2["uid"]]["role"] == role) {
+              widgeList.add(
+                CircleAvatar(
+                  backgroundImage: NetworkImage(
+                      gamedata["players"][player2["uid"]]["photoUrl"]),
+                  radius: 20,
+
+                ),
+
+              );
+            }
+          }
+        });
+        picWidgets.add(widgeList);
+      });
+    }
+    return picWidgets;
+  }
   @override
   Widget build(BuildContext context) {
 
+    //change this so its not hardcoded
+    bool day = gamedata["daytime"];
+    //bool day = true;
+    List<String> mafias = [];
+    String mafiaString = "";
+    String role = gamedata["players"][globals.user.uid]["role"];
+    print(allPlayers.length);
+    allPlayers.forEach((Map<String, String> player) {
+      if(gamedata["players"][player["uid"]]["role"] == "mafia" && player["uid"] != globals.user.uid){
+        mafias.add(player["name"]);
+      }
+
+    });
+    var num1 = 0;
+    if(mafias.length == 0){
+      mafiaString = "none";
+    }
+    else {
+      mafias.forEach((String maf) {
+        if (num1 + 1 < mafias.length) {
+            mafiaString += maf + ", ";
+        }
+        else {
+          mafiaString += maf;
+        }
+        num1++;
+      });
+    }
+
+    List<List<Widget>> picWidgets;
+    if (day == true) {
+      iconSelected = Icon(MdiIcons.hatFedora, color: Colors.black);
+      votingPrompt = "Select who you think is the Mafia:";
+      picWidgets = getPicWidgets("all");
+    }
+   else if (day == false) {
+      if (role == "doctor") {
+        iconSelected = Icon(MdiIcons.medicalBag, color: Colors.green);
+        votingPrompt = "Select a player to save:";
+        picWidgets = getPicWidgets("doctor");
+      }
+      else if (role == "mafia") {
+        //numberSelected = (Game.numOfMafia / sqrt(allPlayers.length)).round();
+        iconSelected = Icon(MdiIcons.skullOutline, color: Colors.red);
+        picWidgets = getPicWidgets("mafia");
+        if (numberSelected > 1) {
+          votingPrompt =
+              "Select " + numberSelected.toString() + " players to kill:";
+        }
+        else if (numberSelected == 1) {
+          votingPrompt = "Select a player to kill(Other mafia: " + mafiaString + "):";
+        }
+      }
+    }
+
     // put prompt at top
     List<Widget> widgets = new List<Widget>();
-    widgets.add(Text(widget.prompt, style: TextStyle(fontSize: 20)));
+    widgets.add(Text(votingPrompt, style: TextStyle(fontSize: 20)));
 
     // build list of players to select from
-    widget.players.forEach((String name) {
-      Color bkgColor = Theme.of(context).cardColor;
-      Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
-      if (selectedPlayers.contains(name)) {
-        bkgColor = Colors.red[100];
-        icon = widget.selectedIcon;
+    var num = 0;
+    allPlayers.forEach((Map<String, String> player){
+
+      if(player["role"] == "mafia"){
+        //display photoURL small and to the right for their selected player
+        String photo = player["photoURL"];
       }
-      widgets.add(Card(
-        color: bkgColor,
-        child: ListTile(
-          leading: icon,
-          title: Text(name),
-          onTap: () {addToSelection(name);},
-        ),
-      ));
+
+      Color bkgColor = Theme
+          .of(context)
+          .cardColor;
+      Icon icon = Icon(MdiIcons.chevronRight, color: Colors.green);
+      if (selectedPlayers.contains(player["uid"])) {
+        if (globals.darkMode && role == "doctor" && day == false) {
+          bkgColor = Colors.green.withOpacity(.5);
+        }
+        else if(globals.darkMode){
+          bkgColor = Colors.red.withOpacity(.5);
+        }
+        else
+        if (role == "doctor" && day == false) {
+          bkgColor = Colors.green[100];
+          icon = iconSelected;
+        }
+        else {
+          bkgColor = Colors.red[100];
+          icon = iconSelected;
+        }
+      }
+      if (gamedata["players"][player["uid"]]["alive"]) {
+        widgets.add(Card(
+          color: bkgColor,
+          child:
+          ListTile(
+            leading: icon,
+            title: Text(player["name"]),
+            trailing:
+            Row(
+                mainAxisSize: MainAxisSize.min,
+                children: picWidgets[num]
+            ),
+            onTap: () {
+              addToSelection(player["uid"]);
+            },
+          ),
+        ));
+      }
+      num++;
     });
 
     // return final card for UI

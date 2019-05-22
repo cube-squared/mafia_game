@@ -83,7 +83,7 @@ class _GameScreenState extends State<GameScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(icon: Icon(Icons.help), onPressed: () {
-                UITools.showBasicPopup(context, "Game Information", "You are part of the Mafia. Every night, you will be able to select someone to kill with your fellow mafia members. If the medic doesn't choose to save that person, they will be killed. During the day, all the townspeople will vote on someone to hang for suspicion of being a mafia member, so it's your job to keep your job secret.");
+                UITools.showBasicPopup(context, "Game Information", "This game was created by Cube Squared, the best company in the world at making dumb stuff actually kind of work.");
               }),
               Row(
                 children: <Widget>[
@@ -396,7 +396,7 @@ class _PlayerSelectorState extends State<PlayerSelector> {
     String role = gamedata["players"][globals.user.uid]["role"];
     print(allPlayers.length);
     allPlayers.forEach((Map<String, String> player) {
-      if(gamedata["players"][player["uid"]]["role"] == "mafia" && player["name"] != globals.user.displayName){
+      if(gamedata["players"][player["uid"]]["role"] == "mafia" && player["uid"] != globals.user.uid){
         mafias.add(player["name"]);
       }
 
